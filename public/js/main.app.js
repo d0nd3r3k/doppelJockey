@@ -245,6 +245,8 @@ function init() {
 	debugContext.setTransform(1,0,0,1,136,64);
 	debugContext.strokeStyle = '#FFFFFF';
 
+
+
     //addGUI(guidat);
 
     //Track sphere
@@ -315,6 +317,7 @@ function initWorldMap(){
     // spawnCube(2, 20, 10, 10);
     // spawnCube(4, 10, 20, 10);
     // spawnCube(3, 10, 10, 20);
+
     for(var i=0; i<500; i++)
         spawnCube(getRandomInt(1,4),getRandomInt(-300,300),getRandomInt(20,300),getRandomInt(-300,300));
 }
@@ -358,28 +361,51 @@ function update(dt) {
     else
         fps.update(dt);
 
-    //map
+    // Canvas 2D Map
     debugContext.clearRect( -136, -64, 274, 128 );
 
 	debugContext.beginPath();
 
 	// center
-	// debugContext.moveTo( -10, 0 );
-	// debugContext.lineTo( 10, 0 );
-	// debugContext.moveTo( 0, -10 );
-	// debugContext.lineTo( 0, 10 );
+	debugContext.moveTo( -10, 0 );
+	debugContext.lineTo( 10, 0 );
+	debugContext.moveTo( 0, -10 );
+	debugContext.lineTo( 0, 10 );
 
 	// camera
 	debugContext.rect( -player.position.z+125, (player.position.x-114)/2.5, 4, 4 );
 
-    // Tracks
-    for (var i=0; i<spheres.length; i++){
-        var sphere = spheres[i];
-        debugContext.rect(-sphere.position.z+122,(sphere.position.x-122)/2.5,10,10);
-    }
-
 	debugContext.closePath();
 	debugContext.stroke();
+
+    // Tracks
+
+    for (var i=0; i<spheres.length; i++){
+        var sphere = spheres[i];
+        spawnDebugSphere(sphere, 'white');
+    }
+
+    switch (whichQuad()) {
+        case 0:
+            spawnDebugSphere(spheres[0], 'red');
+            spawnDebugSphere(spheres[1], 'red');
+            break;
+        case 1:
+            spawnDebugSphere(spheres[1], 'red');
+            spawnDebugSphere(spheres[2], 'red');
+            break;
+        case 2:
+            spawnDebugSphere(spheres[4], 'red');
+            spawnDebugSphere(spheres[5], 'red');
+            break;
+        case 3:
+            spawnDebugSphere(spheres[3], 'red');
+            spawnDebugSphere(spheres[4], 'red');
+            break;
+        default:
+    }
+
+
 }
 
 function render(dt) {
@@ -393,6 +419,25 @@ function render(dt) {
 /*
  * Helper Functions
  */
+
+function spawnDebugSphere(sphere, color){
+    debugContext.beginPath();
+    debugContext.rect(-sphere.position.z+122,(sphere.position.x-122)/2.5,10,10);
+    debugContext.strokeStyle = color;
+    debugContext.closePath();
+	debugContext.stroke();
+}
+
+function whichQuad(){
+    if((player.position.x <= 127) && (player.position.z >= 0) && (player.position.z <= 127))
+        return 0;
+    if((player.position.x <= 127) && (player.position.z > 127) && (player.position.z <= 254))
+        return 1;
+    if((player.position.x > 127) && (player.position.z >= 0) && (player.position.z <= 127))
+        return 2;
+    if((player.position.x > 127) && (player.position.z >= 127) && (player.position.z <= 254))
+        return 3;
+}
 
 function visualizeSingleCube(i, v){
 
