@@ -1,6 +1,8 @@
 /*
- * HTML5 Audio from Microphone
+ * HTML5 Web Audio API
  */
+
+ // Get signal from microphone
 var tracks =[];
 var isMobile = !!navigator.userAgent.match(/iphone|android/ig) || false;
 
@@ -38,6 +40,7 @@ function summonTrack(filename,x,y,z){
     track.source = audioCtx.createBufferSource();
     track.volume = audioCtx.createGain();
     track.filename = filename;
+    track.isPlaying = false;
     //track.source.loop = true;
     track.source.connect(track.volume);
 
@@ -48,7 +51,7 @@ function summonTrack(filename,x,y,z){
     track.panner.setPosition(x,y,z);
     tracks.push(track);
     requestTrack(track);
-    spawnSphere(12, x,y,z);
+    spawnSphere(12, x,y,z, true);
 }
 function requestTrack(track){
     // Load a sound file using an ArrayBuffer XMLHttpRequest.
@@ -98,6 +101,7 @@ navigator.getUserMedia = navigator.getUserMedia ||
    }
  );
 }
+
 /*
  * WebGl Three.js code
  */
@@ -125,7 +129,7 @@ var socket = io.connect(sHost);
 
 var materials = (function(){
     var m = {};
-    m.basicBlack = new THREE.MeshBasicMaterial( { color: 0x000000 } );
+    m.basicBlack = new THREE.MeshBasicMaterial( { color: 0x000000, transparent: true, opacity: 0.1 } );
     m.basicGreen = new THREE.MeshBasicMaterial( { color: 0x4A8C66 } );
     m.basicRed = new THREE.MeshBasicMaterial( { color: 0x9E1A1A } );
     m.basicWhite = new THREE.MeshBasicMaterial( { color: 0xfefefe } );
@@ -210,12 +214,12 @@ function init() {
     window.addEventListener('deviceorientation', setOrientationControls, true);
 
     //Display fps
-    // stats = new Stats();
-    // stats.domElement.style.position = 'absolute';
-    // stats.domElement.style.zIndex = 100;
-    // stats.domElement.style.bottom = '0px';
-    // stats.domElement.style.right = '0px';
-    // container.appendChild( stats.domElement );
+    stats = new Stats();
+    stats.domElement.style.position = 'absolute';
+    stats.domElement.style.zIndex = 100;
+    stats.domElement.style.bottom = '0px';
+    stats.domElement.style.right = '0px';
+    container.appendChild( stats.domElement );
 
     //Worlds elements
     initWorldMap();
@@ -245,8 +249,6 @@ function init() {
 	debugContext.setTransform(1,0,0,1,136,64);
 	debugContext.strokeStyle = '#FFFFFF';
 
-
-
     //addGUI(guidat);
 
     //Track sphere
@@ -265,7 +267,7 @@ function init() {
 function initWorldMap(){
     //Scenes hemilight - the sky is red inside FL
     //var hemiLight = new THREE.HemisphereLight( 0x9E1A1A, 0x9E1A1A, 1 );
-    var hemiLight = new THREE.HemisphereLight( 0x000000, 0x000000, 1 );
+    var hemiLight = new THREE.HemisphereLight( 0x000000, 0x000000, 0.2 );
     hemiLight.position.y = 500;
     scene.add( hemiLight );
 
@@ -306,22 +308,17 @@ function initWorldMap(){
         map: floorTexture
     });
 
-    var geometry = new THREE.PlaneBufferGeometry(1000, 1000);
+    var geometry = new THREE.PlaneBufferGeometry(5000, 5000);
 
     var floor = new THREE.Mesh(geometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2;
     scene.add(floor);
 
-    //Cubism Test
-    // spawnCube(1, 10, 10, 10);
-    // spawnCube(2, 20, 10, 10);
-    // spawnCube(4, 10, 20, 10);
-    // spawnCube(3, 10, 10, 20);
-
-    for(var i=0; i<500; i++)
-        spawnCube(getRandomInt(1,4),getRandomInt(-300,300),getRandomInt(20,300),getRandomInt(-300,300));
+    for(var i=0; i<2048; i++)
+        spawnCube(getRandomInt(1,10),getRandomInt(-1000,1000),getRandomInt(120,600),getRandomInt(-1000,1000));
+    for(var i=0; i<24; i++)
+        spawnSphere(getRandomInt(6,16),getRandomInt(-1000,1000),getRandomInt(500,1000),getRandomInt(-1000,1000), false);
 }
-
 
 /*
  * Animate and Render
@@ -353,7 +350,7 @@ function animate() {
 }
 
 function update(dt) {
-    //if(stats) stats.update();
+    if(stats) stats.update();
     resize();
     camera.updateProjectionMatrix();
     if(controls)
@@ -366,12 +363,6 @@ function update(dt) {
 
 	debugContext.beginPath();
 
-	// center
-	debugContext.moveTo( -10, 0 );
-	debugContext.lineTo( 10, 0 );
-	debugContext.moveTo( 0, -10 );
-	debugContext.lineTo( 0, 10 );
-
 	// camera
 	debugContext.rect( -player.position.z+125, (player.position.x-114)/2.5, 4, 4 );
 
@@ -379,28 +370,31 @@ function update(dt) {
 	debugContext.stroke();
 
     // Tracks
-
     for (var i=0; i<spheres.length; i++){
         var sphere = spheres[i];
-        spawnDebugSphere(sphere, 'white');
+        drawDebugSphere(sphere, 'white');
+        if(tracks[i].isPlaying && i<=2)
+            drawDebugPlay(sphere, true)
+        else if(tracks[i].isPlaying && i>2)
+            drawDebugPlay(sphere, false)
     }
 
     switch (whichQuad()) {
         case 0:
-            spawnDebugSphere(spheres[0], 'red');
-            spawnDebugSphere(spheres[1], 'red');
+            drawDebugSphere(spheres[0], 'red');
+            drawDebugSphere(spheres[1], 'red');
             break;
         case 1:
-            spawnDebugSphere(spheres[1], 'red');
-            spawnDebugSphere(spheres[2], 'red');
+            drawDebugSphere(spheres[1], 'red');
+            drawDebugSphere(spheres[2], 'red');
             break;
         case 2:
-            spawnDebugSphere(spheres[4], 'red');
-            spawnDebugSphere(spheres[5], 'red');
+            drawDebugSphere(spheres[4], 'red');
+            drawDebugSphere(spheres[5], 'red');
             break;
         case 3:
-            spawnDebugSphere(spheres[3], 'red');
-            spawnDebugSphere(spheres[4], 'red');
+            drawDebugSphere(spheres[3], 'red');
+            drawDebugSphere(spheres[4], 'red');
             break;
         default:
     }
@@ -415,15 +409,40 @@ function render(dt) {
         renderer.render(scene, camera);
 }
 
-
 /*
  * Helper Functions
  */
 
-function spawnDebugSphere(sphere, color){
+function pauseTrack(id){
+    tracks[id].source.disconnect();
+}
+
+function unpauseTrack(id){
+    tracks[id].source.connect(tracks[id].volume)
+}
+
+function drawCenterCross(){
+    debugContext.moveTo( -10, 0 );
+	debugContext.lineTo( 10, 0 );
+	debugContext.moveTo( 0, -10 );
+	debugContext.lineTo( 0, 10 );
+}
+
+function drawDebugSphere(sphere, color){
     debugContext.beginPath();
     debugContext.rect(-sphere.position.z+122,(sphere.position.x-122)/2.5,10,10);
     debugContext.strokeStyle = color;
+    debugContext.closePath();
+	debugContext.stroke();
+}
+
+function drawDebugPlay(sphere, opp){
+    debugContext.beginPath();
+    if(opp)
+        debugContext.rect(-sphere.position.z+125,(sphere.position.x-98)/2.5,4,4);
+    else
+        debugContext.rect(-sphere.position.z+125,(sphere.position.x-132)/2.5,4,4);
+    debugContext.strokeStyle = 'green';
     debugContext.closePath();
 	debugContext.stroke();
 }
@@ -461,13 +480,28 @@ function spawnCube(scale, x, y, z){
     scene.add(cube);
 }
 
-function spawnSphere(scale, x, y, z){
-    var basicSphere = new THREE.SphereGeometry(scale, 42, 42);
-    var material = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.2 } );
+function spawnCubismTest(){
+    spawnCube(1, 10, 10, 10);
+    spawnCube(2, 20, 10, 10);
+    spawnCube(4, 10, 20, 10);
+    spawnCube(3, 10, 10, 20);
+}
+
+function spawnSphere(scale, x, y, z, isTrack){
+    var basicSphere = new THREE.SphereGeometry(scale, 32, 32);
+    var material;
+
+    if (isTrack)
+        material = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.2 } );
+    else
+        material = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.02 } );
+
     var s = new THREE.Mesh( basicSphere, material );
     s.position.set(x, y, z);
-    spheres.push(s);
     scene.add(s);
+
+    if(isTrack)
+        spheres.push(s);
 }
 
 function animateBlock(time){
@@ -576,7 +610,6 @@ function sendConsole(val){
     eval(val);
 }
 
-
 /*
  * Keyboard control
  */
@@ -682,26 +715,144 @@ function onMIDIMessage( event ) {
             break;
         case 59:
             if(force==127){
-                if((player.position.x <= 127) && (player.position.z >= 0) && (player.position.z <= 127))
-                    tracks[1].source.start(audioCtx.currentTime);
-                if((player.position.x <= 127) && (player.position.z > 127) && (player.position.z <= 254))
-                    tracks[2].source.start(audioCtx.currentTime);
-                if((player.position.x > 127) && (player.position.z >= 0) && (player.position.z <= 127))
-                    tracks[4].source.start(audioCtx.currentTime);
-                if((player.position.x > 127) && (player.position.z >= 127) && (player.position.z <= 254))
-                    tracks[3].source.start(audioCtx.currentTime);
+                switch (whichQuad()) {
+                    case 0:
+                        if(!tracks[1].isPlaying){
+                            tracks[1].source.start(audioCtx.currentTime);
+                            tracks[1].isPlaying=true;
+                        }
+                        else{
+                            if(tracks[1].isPlaying != 100){
+                                pauseTrack(1);
+                                tracks[1].isPlaying=100;
+                            }
+                            else{
+                                unpauseTrack(1);
+                                tracks[1].isPlaying=true;
+                            }
+                        }
+                        break;
+                    case 1:
+                        if(!tracks[2].isPlaying){
+                            tracks[2].source.start(audioCtx.currentTime);
+                            tracks[2].isPlaying=true;
+                        }
+                        else{
+                            if(tracks[2].isPlaying != 100){
+                                pauseTrack(2);
+                                tracks[2].isPlaying=100;
+                            }
+                            else{
+                                unpauseTrack(2);
+                                tracks[2].isPlaying=true;
+                            }
+                        }
+                        break;
+                    case 2:
+                        if(!tracks[4].isPlaying){
+                            tracks[4].source.start(audioCtx.currentTime);
+                            tracks[4].isPlaying=true;
+                        }
+                        else{
+                            if(tracks[4].isPlaying != 100){
+                                pauseTrack(4);
+                                tracks[4].isPlaying=100;
+                            }
+                            else{
+                                unpauseTrack(4);
+                                tracks[4].isPlaying=true;
+                            }
+                        }
+                        break;
+                    case 3:
+                        if(!tracks[3].isPlaying){
+                            tracks[3].source.start(audioCtx.currentTime);
+                            tracks[3].isPlaying=true;
+                        }
+                        else{
+                            if(tracks[3].isPlaying != 100){
+                                pauseTrack(3);
+                                tracks[3].isPlaying=100;
+                            }
+                            else{
+                                unpauseTrack(3);
+                                tracks[3].isPlaying=true;
+                            }
+                        }
+                        break;
+                    default:
+                }
             }
             break;
             case 66:
                 if(force==127){
-                    if((player.position.x <= 127) && (player.position.z >= 0) && (player.position.z <= 127))
-                        tracks[0].source.start(audioCtx.currentTime);
-                    if((player.position.x <= 127) && (player.position.z > 127) && (player.position.z <= 254))
-                        tracks[1].source.start(audioCtx.currentTime);
-                    if((player.position.x > 127) && (player.position.z >= 0) && (player.position.z <= 127))
-                        tracks[5].source.start(audioCtx.currentTime);
-                    if((player.position.x > 127) && (player.position.z >= 127) && (player.position.z <= 254))
-                        tracks[4].source.start(audioCtx.currentTime);
+                    switch (whichQuad()) {
+                        case 0:
+                            if(!tracks[0].isPlaying){
+                                tracks[0].source.start(audioCtx.currentTime);
+                                tracks[0].isPlaying=true;
+                            }
+                            else{
+                                if(tracks[0].isPlaying != 100){
+                                    pauseTrack(0);
+                                    tracks[0].isPlaying=100;
+                                }
+                                else{
+                                    unpauseTrack(0);
+                                    tracks[0].isPlaying=true;
+                                }
+                            }
+                            break;
+                        case 1:
+                            if(!tracks[1].isPlaying){
+                                tracks[1].source.start(audioCtx.currentTime);
+                                tracks[1].isPlaying=true;
+                            }
+                            else{
+                                if(tracks[1].isPlaying != 100){
+                                    pauseTrack(1);
+                                    tracks[1].isPlaying=100;
+                                }
+                                else{
+                                    unpauseTrack(1);
+                                    tracks[1].isPlaying=true;
+                                }
+                            }
+                            break;
+                        case 2:
+                            if(!tracks[5].isPlaying){
+                                tracks[5].source.start(audioCtx.currentTime);
+                                tracks[5].isPlaying=true;
+                            }
+                            else{
+                                if(tracks[5].isPlaying != 100){
+                                    pauseTrack(5);
+                                    tracks[5].isPlaying=100;
+                                }
+                                else{
+                                    unpauseTrack(5);
+                                    tracks[5].isPlaying=true;
+                                }
+                            }
+                            break;
+                        case 3:
+                            if(!tracks[4].isPlaying){
+                                tracks[4].source.start(audioCtx.currentTime);
+                                tracks[4].isPlaying=true;
+                            }
+                            else{
+                                if(tracks[4].isPlaying != 100){
+                                    pauseTrack(4);
+                                    tracks[4].isPlaying=100;
+                                }
+                                else{
+                                    unpauseTrack(4);
+                                    tracks[4].isPlaying=true;
+                                }
+                            }
+                            break;
+                        default:
+                    }
                 }
                 break;
 
