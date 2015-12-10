@@ -56,6 +56,128 @@ var geometries = (function(){
     return g;
 })();
 
+var djControls = (function() {
+    var djc = {};
+    djc.mesh = new THREE.Mesh();
+
+    // 2 sets of buttons below each turny thing
+    djc.mesh.add(createButton(1.1, .5, -5.4, -16.62));
+    djc.mesh.add(createButton(1.1, .5, -6.76, -16.62));
+    djc.mesh.add(createButton(1.1, .5, 5.4, -16.62));
+    djc.mesh.add(createButton(1.1, .5, 6.76, -16.62));
+    // song selection cylinder
+    djc.mesh.add(createKnob(.45, 0, -22.4));
+    // two queing buttons
+    djc.mesh.add(createButton(.7, .4, -1.45, -21));
+    djc.mesh.add(createButton(.7, .4, 1.45, -21));
+    // top left controls
+    djc.mesh.add(createButton(1.2, 1.2, -3.1, -25.7));
+    djc.mesh.add(createButton(1.2, 1.2, -4.6, -25.7));
+    djc.mesh.add(createButton(1.2, 1.2, -6.1, -25.7));
+    djc.mesh.add(createButton(1.2, 1.2, -7.6, -25.7));
+    djc.mesh.add(createKnob(.2, -3.1, -27.3));
+    djc.mesh.add(createKnob(.2, -4.6, -27.3));
+    djc.mesh.add(createKnob(.2, -6.15, -27.3));
+    djc.mesh.add(createKnob(.2, -7.6, -27.3));
+    // top right controls
+    djc.mesh.add(createButton(1.2, 1.2, 3.1, -25.7));
+    djc.mesh.add(createButton(1.2, 1.2, 4.6, -25.7));
+    djc.mesh.add(createButton(1.2, 1.2, 6.1, -25.7));
+    djc.mesh.add(createButton(1.2, 1.2, 7.6, -25.7));
+    djc.mesh.add(createKnob(.2, 3.1, -27.3));
+    djc.mesh.add(createKnob(.2, 4.6, -27.3));
+    djc.mesh.add(createKnob(.2, 6.15, -27.3));
+    djc.mesh.add(createKnob(.2, 7.6, -27.3));
+
+    // Slider tricks!
+    djc.setSliderValue = function(slider, midiVal) {
+        sliderVal = midiToSlider(midiVal, slider.range);
+        if (slider.horizontal) {
+            slider.mesh.position.x = sliderVal;
+            if ((midiVal > 127) && (slider.prevMidi < 127)) {
+                var tween = new TWEEN.Tween({v: player.position.z})
+                                .to({v: -12.2}, 300)
+                                .easing(TWEEN.Easing.Cubic.In)
+                                .onUpdate(function() {
+                                    player.position.z = this.v;
+                                }).start();
+            }
+            else if ((midiVal < 127) && (slider.prevMidi > 127)) {
+                var tween = new TWEEN.Tween({v: player.position.z})
+                                .to({v: 0}, 300)
+                                .easing(TWEEN.Easing.Cubic.In)
+                                .onUpdate(function() {
+                                    player.position.z = this.v;
+                                }).start();
+                player.position.z = 0;
+            }
+        }
+        else {
+            slider.mesh.position.z = -sliderVal;
+            if ((midiVal > 127) && (slider.prevMidi < 127)) {
+                var tween = new TWEEN.Tween({v: player.position.x})
+                                .to({v: -16}, 300)
+                                .easing(TWEEN.Easing.Cubic.In)
+                                .onUpdate(function() {
+                                    player.position.x = this.v;
+                                }).start();
+                //player.position.x = -16;
+            }
+            else if ((midiVal < 127) && (slider.prevMidi > 127)) {
+                var tween = new TWEEN.Tween({v: player.position.x})
+                                .to({v: 0}, 300)
+                                .easing(TWEEN.Easing.Cubic.In)
+                                .onUpdate(function() {
+                                    player.position.x = this.v;
+                                }).start();
+                //player.position.x = 0;
+            }
+        }
+        slider.prevMidi = midiVal;
+    }
+
+
+
+    djc.xSlider = spawnSlider(.3, .9, 0, -16.5, -1.13, 1.13);
+    djc.ySlider = spawnSlider(.9, .3, 0, -19.2, 17.75, 19.8);
+    djc.lSlider = spawnSlider(.9, .3, -1.4, -19.2, 17.75, 19.8);
+    djc.rSlider = spawnSlider(.9, .3, 1.4, -19.2, 17.75, 19.8);
+    djc.mesh.add(djc.xSlider.mesh);
+    djc.mesh.add(djc.ySlider.mesh);
+    djc.mesh.add(djc.lSlider.mesh);
+    djc.mesh.add(djc.rSlider.mesh);
+
+    function spawnSlider(width, length, x, y, min, max) {
+        var s = {};
+        s.horizontal = width < length;    // check orientation
+        s.mesh = createSliderPiece(width, length, x, y);
+        s.range = [min, max];
+        s.prevMidi = 0;
+        return s;
+    }
+    function midiToSlider(midiVal, sliderRange) {
+        midiRange = [0, 255];
+        return ( midiVal - midiRange[ 0 ] ) * ( sliderRange[ 1 ] - sliderRange[ 0 ] ) / ( midiRange[ 1 ] - midiRange[ 0 ] ) + sliderRange[ 0 ];
+    }
+    function createSliderPiece(width, length, x, y) {
+        var sliderPiece = new THREE.Mesh(new THREE.BoxGeometry(width, 0.22, length), materials.transparentWhite);
+        sliderPiece.position.set(x, -4.7, y);
+        return sliderPiece;
+    }
+    function createButton(width, length, x, y) {
+        var button = new THREE.Mesh(new THREE.BoxGeometry(width, 0.1, length), materials.transparentWhite);
+        button.position.set(x, -4.85, y);
+        return button;
+    }
+    function createKnob(radius, x, y) {
+        var knob = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, .8, 32), materials.transparentWhite);
+        knob.position.set(x, -4.6, y);
+        return knob;
+    }
+
+    return djc;
+})();
+
 //Before the BIGBANG
 init();
 //After the BIGBANG
@@ -138,8 +260,8 @@ function init() {
         this.testSphereX = -20;
         this.testSphereY = 12;
         this.testSphereZ = 0;
-        this.buttonX = 0.0;
-        this.buttonZ = 17.4;
+        this.xSlider = 127;
+        this.ySlider = 127;
         //Add more control variables
     }
 
@@ -181,66 +303,10 @@ function init() {
     djbox.position.set(0, -5, -22);
     player.add(djbox);
 
-    var djControls = new THREE.Mesh();
-    player.add(djControls);
-    // button = createButton(.8, .3, 0, -16.5);
-    // djControls.add(button);
-
-    // 2 sets of buttons below each turny thing
-    djControls.add(createButton(1.1, .5, -5.4, -16.62));
-    djControls.add(createButton(1.1, .5, -6.76, -16.62));
-    djControls.add(createButton(1.1, .5, 5.4, -16.62));
-    djControls.add(createButton(1.1, .5, 6.76, -16.62));
-    // sliders
-    djControls.add(createSliderPiece(.9, .3, 0, -19.2));
-    djControls.add(createSliderPiece(.9, .3, -1.4, -19.2));
-    djControls.add(createSliderPiece(.9, .3, 1.4, -19.2));
-    djControls.add(createSliderPiece(.3, .9, 0, -16.5));
-    // song selection cylinder
-    djControls.add(createKnob(.45, 0, -22.4));
-
-    // two queing buttons
-    djControls.add(createButton(.7, .4, -1.45, -21));
-    djControls.add(createButton(.7, .4, 1.45, -21));
-    // top left controls
-    djControls.add(createButton(1.2, 1.2, -3.1, -25.7));
-    djControls.add(createButton(1.2, 1.2, -4.6, -25.7));
-    djControls.add(createButton(1.2, 1.2, -6.1, -25.7));
-    djControls.add(createButton(1.2, 1.2, -7.6, -25.7));
-    djControls.add(createKnob(.2, -3.1, -27.3));
-    djControls.add(createKnob(.2, -4.6, -27.3));
-    djControls.add(createKnob(.2, -6.15, -27.3));
-    djControls.add(createKnob(.2, -7.6, -27.3));
-    // top right controls
-    djControls.add(createButton(1.2, 1.2, 3.1, -25.7));
-    djControls.add(createButton(1.2, 1.2, 4.6, -25.7));
-    djControls.add(createButton(1.2, 1.2, 6.1, -25.7));
-    djControls.add(createButton(1.2, 1.2, 7.6, -25.7));
-    djControls.add(createKnob(.2, 3.1, -27.3));
-    djControls.add(createKnob(.2, 4.6, -27.3));
-    djControls.add(createKnob(.2, 6.15, -27.3));
-    djControls.add(createKnob(.2, 7.6, -27.3));
-
-    function createButton(width, length, x, y) {
-        var button = new THREE.Mesh(new THREE.BoxGeometry(width, 0.1, length), materials.transparentWhite);
-        button.position.set(x, -4.85, y);
-        return button;
-    }
-
-    function createSliderPiece(width, length, x, y) {
-        var sliderPiece = new THREE.Mesh(new THREE.BoxGeometry(width, 0.22, length), materials.transparentWhite);
-        sliderPiece.position.set(x, -4.7, y);
-        return sliderPiece;
-    }
-
-    function createKnob(radius, x, y) {
-        var knob = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, .8, 32), materials.transparentWhite);
-        knob.position.set(x, -4.6, y);
-        return knob;
-    }
-
-    // XX TESTING PURPOSES. Pull the player out to see big picture
-    //player.position.set(70, 10, 0);
+    //var djControls = new THREE.Mesh();
+    player.add(djControls.mesh);
+    //  button = createButton(.3, .9, 0, -16.5);
+    //  djControls.add(button);
 
     addGUI(guidat);
 
@@ -344,55 +410,56 @@ function update(dt) {
     if(stats) stats.update();
     resize();
     camera.updateProjectionMatrix();
+    TWEEN.update();
     if(controls)
         controls.update(dt);
     else
         fps.update(dt);
 
-    // Canvas 2D Map
-    debugContext.clearRect( -136, -64, 274, 128 );
-
-	debugContext.beginPath();
-
-	// camera
-	debugContext.rect( -player.position.z+143, (player.position.x-74)/2.5, 4, 4 );
-	debugContext.closePath();
-	debugContext.stroke();
-
-    // Tracks
-    for (var i=0; i<spheres.length; i++){
-        var sphere = spheres[i];
-        drawDebugSphere(sphere, 'white');
-    }
-
-
-    controllerQuadrant = whichQuad();
-    var whichSphere;
-    switch (controllerQuadrant) {
-        case 0:
-            drawDebugSphere(spheres[0], 'red');
-            drawDebugSphere(spheres[1], 'red');
-            whichSphere = 1;
-            break;
-        case 1:
-            drawDebugSphere(spheres[1], 'red');
-            drawDebugSphere(spheres[2], 'red');
-            whichSphere = 2;
-            break;
-        case 2:
-            drawDebugSphere(spheres[4], 'red');
-            drawDebugSphere(spheres[5], 'red');
-            whichSphere = 4;
-            break;
-        case 3:
-            drawDebugSphere(spheres[3], 'red');
-            drawDebugSphere(spheres[4], 'red');
-            whichSphere = 3;
-            break;
-        default:
-    }
-    drawDebugControllerOutline(-spheres[whichSphere].position.z,
-                                spheres[whichSphere].position.x, 'red');
+    // // Canvas 2D Map
+    // debugContext.clearRect( -136, -64, 274, 128 );
+    //
+	// debugContext.beginPath();
+    //
+	// // camera
+	// debugContext.rect( -player.position.z+143, (player.position.x-74)/2.5, 4, 4 );
+	// debugContext.closePath();
+	// debugContext.stroke();
+    //
+    // // Tracks
+    // for (var i=0; i<spheres.length; i++){
+    //     var sphere = spheres[i];
+    //     drawDebugSphere(sphere, 'white');
+    // }
+    //
+    //
+    // controllerQuadrant = whichQuad();
+    // var whichSphere;
+    // switch (controllerQuadrant) {
+    //     case 0:
+    //         drawDebugSphere(spheres[0], 'red');
+    //         drawDebugSphere(spheres[1], 'red');
+    //         whichSphere = 1;
+    //         break;
+    //     case 1:
+    //         drawDebugSphere(spheres[1], 'red');
+    //         drawDebugSphere(spheres[2], 'red');
+    //         whichSphere = 2;
+    //         break;
+    //     case 2:
+    //         drawDebugSphere(spheres[4], 'red');
+    //         drawDebugSphere(spheres[5], 'red');
+    //         whichSphere = 4;
+    //         break;
+    //     case 3:
+    //         drawDebugSphere(spheres[3], 'red');
+    //         drawDebugSphere(spheres[4], 'red');
+    //         whichSphere = 3;
+    //         break;
+    //     default:
+    // }
+    // drawDebugControllerOutline(-spheres[whichSphere].position.z,
+    //                             spheres[whichSphere].position.x, 'red');
 }
 
 function render(dt) {
@@ -444,12 +511,12 @@ function unpauseTrack(id){
     //  gui.add(datObj, 'testSphereZ', -20, 20).onChange(function(v) {
     //      testSphere.position.z = v;
     //  });
-    //  gui.add(datObj, 'buttonX', -10, 10).onChange(function(v) {
-    //      button.position.x = v;
-    //  });
-    //  gui.add(datObj, 'buttonZ', 10, 30).onChange(function(v) {
-    //      button.position.z = -v;
-    //  });
+     gui.add(datObj, 'xSlider', 0, 255).onChange(function(v) {
+         djControls.setSliderValue(djControls.xSlider, v);
+     });
+     gui.add(datObj, 'ySlider', 0, 255).onChange(function(v) {
+         djControls.setSliderValue(djControls.ySlider, v);
+     });
  }
 
  function resize() {
