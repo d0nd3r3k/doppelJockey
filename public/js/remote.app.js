@@ -21,6 +21,7 @@ mapTexture,
 cubeMaterial,
 djbox,
 button, //just to test
+testSphere, //just to test
 clock,
 container,
 hemiLight,
@@ -134,6 +135,9 @@ function init() {
     guidat = new function(){
         this.scale = 1;
         this.stereo = false;
+        this.testSphereX = -20;
+        this.testSphereY = 12;
+        this.testSphereZ = 0;
         this.buttonX = 0.0;
         this.buttonZ = 17.4;
         //Add more control variables
@@ -179,55 +183,59 @@ function init() {
 
     var djControls = new THREE.Mesh();
     player.add(djControls);
+    // button = createButton(.8, .3, 0, -16.5);
+    // djControls.add(button);
+
     // 2 sets of buttons below each turny thing
-    djControls.add(createButton(.72, .4, 3.6, -11.22));
-    djControls.add(createButton(.72, .4, 4.6, -11.22));
-    djControls.add(createButton(.72, .4, -3.6, -11.22));
-    djControls.add(createButton(.72, .4, -4.6, -11.22));
+    djControls.add(createButton(1.1, .5, -5.4, -16.62));
+    djControls.add(createButton(1.1, .5, -6.76, -16.62));
+    djControls.add(createButton(1.1, .5, 5.4, -16.62));
+    djControls.add(createButton(1.1, .5, 6.76, -16.62));
     // sliders
-    djControls.add(createSliderPiece(.7, .2, 0, -13));
-    djControls.add(createSliderPiece(.7, .2, -.95, -13));
-    djControls.add(createSliderPiece(.7, .2, .95, -13));
-    djControls.add(createSliderPiece(.2, .6, 0, -11.22));
+    djControls.add(createSliderPiece(.9, .3, 0, -19.2));
+    djControls.add(createSliderPiece(.9, .3, -1.4, -19.2));
+    djControls.add(createSliderPiece(.9, .3, 1.4, -19.2));
+    djControls.add(createSliderPiece(.3, .9, 0, -16.5));
     // song selection cylinder
-    djControls.add(createKnob(.3, 0, -15.4));
+    djControls.add(createKnob(.45, 0, -22.4));
+
     // two queing buttons
-    djControls.add(createButton(.5, .2, -.96, -14.1));
-    djControls.add(createButton(.5, .2, .96, -14.1));
+    djControls.add(createButton(.7, .4, -1.45, -21));
+    djControls.add(createButton(.7, .4, 1.45, -21));
     // top left controls
-    djControls.add(createButton(.85, .85, -2.1, -17.4));
-    djControls.add(createButton(.85, .85, -3.13, -17.4));
-    djControls.add(createButton(.85, .85, -4.12, -17.4));
-    djControls.add(createButton(.85, .85, -5.12, -17.4));
-    djControls.add(createKnob(.15, -2.1, -18.7));
-    djControls.add(createKnob(.15, -3.13, -18.7));
-    djControls.add(createKnob(.15, -4.2, -18.7));
-    djControls.add(createKnob(.15, -5.2, -18.7));
+    djControls.add(createButton(1.2, 1.2, -3.1, -25.7));
+    djControls.add(createButton(1.2, 1.2, -4.6, -25.7));
+    djControls.add(createButton(1.2, 1.2, -6.1, -25.7));
+    djControls.add(createButton(1.2, 1.2, -7.6, -25.7));
+    djControls.add(createKnob(.2, -3.1, -27.3));
+    djControls.add(createKnob(.2, -4.6, -27.3));
+    djControls.add(createKnob(.2, -6.15, -27.3));
+    djControls.add(createKnob(.2, -7.6, -27.3));
     // top right controls
-    djControls.add(createButton(.85, .85, 2.1, -17.4));
-    djControls.add(createButton(.85, .85, 3.13, -17.4));
-    djControls.add(createButton(.85, .85, 4.12, -17.4));
-    djControls.add(createButton(.85, .85, 5.12, -17.4));
-    djControls.add(createKnob(.15, 2.1, -18.7));
-    djControls.add(createKnob(.15, 3.13, -18.7));
-    djControls.add(createKnob(.15, 4.2, -18.7));
-    djControls.add(createKnob(.15, 5.2, -18.7));
+    djControls.add(createButton(1.2, 1.2, 3.1, -25.7));
+    djControls.add(createButton(1.2, 1.2, 4.6, -25.7));
+    djControls.add(createButton(1.2, 1.2, 6.1, -25.7));
+    djControls.add(createButton(1.2, 1.2, 7.6, -25.7));
+    djControls.add(createKnob(.2, 3.1, -27.3));
+    djControls.add(createKnob(.2, 4.6, -27.3));
+    djControls.add(createKnob(.2, 6.15, -27.3));
+    djControls.add(createKnob(.2, 7.6, -27.3));
 
     function createButton(width, length, x, y) {
         var button = new THREE.Mesh(new THREE.BoxGeometry(width, 0.1, length), materials.transparentWhite);
-        button.position.set(x, 0, y);
+        button.position.set(x, -4.85, y);
         return button;
     }
 
     function createSliderPiece(width, length, x, y) {
         var sliderPiece = new THREE.Mesh(new THREE.BoxGeometry(width, 0.22, length), materials.transparentWhite);
-        sliderPiece.position.set(x, 0, y);
+        sliderPiece.position.set(x, -4.7, y);
         return sliderPiece;
     }
 
     function createKnob(radius, x, y) {
-        var knob = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, .5, 32), materials.transparentWhite);
-        knob.position.set(x, 0, y);
+        var knob = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, .8, 32), materials.transparentWhite);
+        knob.position.set(x, -4.6, y);
         return knob;
     }
 
@@ -237,12 +245,21 @@ function init() {
     addGUI(guidat);
 
     //Track sphere
-    spawnSphere(12,0,12,0,true);
-    spawnSphere(12,0,12,127,true);
-    spawnSphere(12,0,12,254,true);
-    spawnSphere(12,254,12,254,true);
-    spawnSphere(12,254,12,127,true);
-    spawnSphere(12,254,12,0,true);
+    var spheresGrid = new THREE.Mesh();
+    scene.add(spheresGrid);
+    spawnSphere(2.8,-20,5,6.1,true, spheresGrid);
+    spawnSphere(2.8,-20,5,-6.1,true, spheresGrid);
+    spawnSphere(2.8,-20,5,-18.3,true, spheresGrid);
+
+    // ones in front
+    spawnSphere(2.8,-36,5,6.1,true, spheresGrid);
+    spawnSphere(2.8,-36,5,-6.1,true, spheresGrid);
+    spawnSphere(2.8,-36,5,-18.3,true, spheresGrid);
+    //    testSphere = spawnSphere(2.8,-20,5,6.1,true, spheresGrid);
+    // spawnSphere(12,-20,12,254,true);
+    // spawnSphere(12,254,12,254,true);
+    // spawnSphere(12,254,12,127,true);
+    // spawnSphere(12,254,12,0,true);
 
     clock = new THREE.Clock();
 
@@ -418,12 +435,21 @@ function unpauseTrack(id){
      gui.add(datObj, 'scale', 0.1, 40).onChange(function(v){
          sendMessage(v);
      });
-     gui.add(datObj, 'buttonX', -10, 10).onChange(function(v) {
-         button.position.x = v;
-     });
-     gui.add(datObj, 'buttonZ', 10, 20).onChange(function(v) {
-         button.position.z = -v;
-     });
+    //  gui.add(datObj, 'testSphereX', -40, 10).onChange(function(v) {
+    //      testSphere.position.x = v;
+    //  });
+    //  gui.add(datObj, 'testSphereY', 0, 20).onChange(function(v) {
+    //      testSphere.position.y = v;
+    //  });
+    //  gui.add(datObj, 'testSphereZ', -20, 20).onChange(function(v) {
+    //      testSphere.position.z = v;
+    //  });
+    //  gui.add(datObj, 'buttonX', -10, 10).onChange(function(v) {
+    //      button.position.x = v;
+    //  });
+    //  gui.add(datObj, 'buttonZ', 10, 30).onChange(function(v) {
+    //      button.position.z = -v;
+    //  });
  }
 
  function resize() {
