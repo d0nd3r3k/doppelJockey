@@ -50,10 +50,12 @@ function summonTrack(filename,x,y,z){
 
     track.panner.setPosition(x,y,z);
     tracks.push(track);
-    requestTrack(track);
     spawnSphere(12, x,y,z, true);
+    return track;
 }
+
 function requestTrack(track){
+
     // Load a sound file using an ArrayBuffer XMLHttpRequest.
     var request = new XMLHttpRequest();
     request.open("GET", track.filename, true);
@@ -62,8 +64,9 @@ function requestTrack(track){
 
       // Create a buffer from the response ArrayBuffer.
       audioCtx.decodeAudioData(this.response, function onSuccess(buffer) {
-        track.buffer = buffer;
 
+        track.buffer = buffer;
+        console.log("receiving buffer...");
         // Make the sound source use the buffer and start playing it.
         track.source.buffer = track.buffer;
         //track.source.start(audioCtx.currentTime);
@@ -74,6 +77,18 @@ function requestTrack(track){
     request.send();
 }
 
+function replaceTrack(track, f){
+
+    if(track.isPlaying)
+        track.source.stop();
+
+    track.source = audioCtx.createBufferSource();
+    track.buffer = undefined;
+    track.filename = f;
+    track.isPlaying=false;
+    track.source.connect(track.volume);
+    requestTrack(track);
+}
 // Webkit/blink browsers need prefix, Safari won't work without window.
 navigator.getUserMedia = navigator.getUserMedia ||
                      navigator.webkitGetUserMedia ||
@@ -190,6 +205,7 @@ function init() {
     camera.target = new THREE.Vector3( 0, 150, 0 );
     camera.position.set(0, 10, 0);
 
+
     //Playa' please!
     player = new THREE.Mesh( geometries.playerGeometry, materials.basicBlack );
     player.position.set(0,10,0);
@@ -227,7 +243,7 @@ function init() {
     //GUI Control
     guidat = new function(){
         this.scale = 1;
-        this.stereo = false;
+        this.stereo = true;
         //Add more control variables
     }
 
@@ -252,16 +268,17 @@ function init() {
     //addGUI(guidat);
 
     //Track sphere
-    summonTrack('tracks/track1.m4a',0,12,0);
-    summonTrack('tracks/track2.m4a',0,12,127);
-    summonTrack('tracks/track6.m4a',0,12,254);
-    summonTrack('tracks/track5.m4a',254,12,254);
-    summonTrack('tracks/track4.m4a',254,12,127);
-    summonTrack('tracks/track3.m4a',254,12,0);
+    requestTrack(summonTrack('tracks/track1.m4a',0,12,0));
+    requestTrack(summonTrack('tracks/track2.m4a',0,12,127));
+    requestTrack(summonTrack('tracks/track6.m4a',0,12,254));
+    requestTrack(summonTrack('tracks/track5.m4a',254,12,254));
+    requestTrack(summonTrack('tracks/track4.m4a',254,12,127));
+    requestTrack(summonTrack('tracks/track3.m4a',254,12,0));
 
     clock = new THREE.Clock();
 
     animate();
+
 }
 
 function initWorldMap(){
@@ -373,10 +390,18 @@ function update(dt) {
     for (var i=0; i<spheres.length; i++){
         var sphere = spheres[i];
         drawDebugSphere(sphere, 'white');
-        if(tracks[i].isPlaying && i<=2)
-            drawDebugPlay(sphere, true)
-        else if(tracks[i].isPlaying && i>2)
-            drawDebugPlay(sphere, false)
+        if(i<=2){
+            if(tracks[i].isPlaying)
+                drawDebugPlay(sphere, true)
+            if(tracks[i].isPlaying == 100)
+                drawDebugPlay(sphere, true, true)
+        }
+        else {
+            if(tracks[i].isPlaying)
+                drawDebugPlay(sphere, false)
+            if(tracks[i].isPlaying == 100)
+                drawDebugPlay(sphere, true, true)
+        }
     }
 
     switch (whichQuad()) {
@@ -398,8 +423,6 @@ function update(dt) {
             break;
         default:
     }
-
-
 }
 
 function render(dt) {
@@ -436,13 +459,19 @@ function drawDebugSphere(sphere, color){
 	debugContext.stroke();
 }
 
-function drawDebugPlay(sphere, opp){
+function drawDebugPlay(sphere, opp, isPaused){
+    if (typeof(isPaused)==='undefined') isPaused = false;
     debugContext.beginPath();
     if(opp)
         debugContext.rect(-sphere.position.z+125,(sphere.position.x-98)/2.5,4,4);
     else
         debugContext.rect(-sphere.position.z+125,(sphere.position.x-132)/2.5,4,4);
-    debugContext.strokeStyle = 'green';
+
+    if(isPaused)
+        debugContext.strokeStyle = 'blue';
+    else
+        debugContext.strokeStyle = 'green';
+
     debugContext.closePath();
 	debugContext.stroke();
 }
@@ -675,6 +704,7 @@ navigator.requestMIDIAccess().then( function(midiAccess){
     console.log( "Failed to get MIDI access - " + msg );
 });
 
+// Midi mapped from a Numark MIXTRACK PRO II Dj Controller.
 function onMIDIMessage( event ) {
     var action = event.data[1];
     var force = event.data[2];
@@ -713,6 +743,14 @@ function onMIDIMessage( event ) {
                 spheres[i].rotateY(rotY/100%360);
             }
             break;
+        case 52:
+            if(force==127){
+                replaceTrack(tracks[0],'tracks/track6.m4a');
+
+            }
+            break;
+
+        // Left Play Button
         case 59:
             if(force==127){
                 switch (whichQuad()) {
@@ -784,13 +822,15 @@ function onMIDIMessage( event ) {
                 }
             }
             break;
+            // Right Play Button
             case 66:
                 if(force==127){
                     switch (whichQuad()) {
                         case 0:
                             if(!tracks[0].isPlaying){
-                                tracks[0].source.start(audioCtx.currentTime);
+                                console.log("Trying to play new song: %s", tracks[0].filename);
                                 tracks[0].isPlaying=true;
+                                tracks[0].source.start(audioCtx.currentTime);
                             }
                             else{
                                 if(tracks[0].isPlaying != 100){
@@ -855,7 +895,6 @@ function onMIDIMessage( event ) {
                     }
                 }
                 break;
-
     }
 }
 

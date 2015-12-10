@@ -3,11 +3,11 @@ var router = express.Router();
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
-  res.render('index', { title: ' F L A T L A N D' });
+  res.render('index', { title: 'doppelJockey - DJ' });
 });
 
-router.get('/r', function(req, res, next) {
-  res.render('remote', { title: 'F L A T L A N D - Remote' });
+router.get('/vr', function(req, res, next) {
+  res.render('remote', { title: 'doppelJockey - VR' });
 });
 
 module.exports = router;
