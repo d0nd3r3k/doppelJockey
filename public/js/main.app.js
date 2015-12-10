@@ -12,47 +12,26 @@ var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 var mainVolume = audioCtx.createGain();
 mainVolume.connect(audioCtx.destination);
 
-// bufferLoader = new BufferLoader(
-//     audioCtx,
-//     [
-//       'tracks/track1.m4a',
-//       'tracks/track2.m4a',
-//       'tracks/track3.m4a',
-//       'tracks/track4.m4a',
-//       'tracks/track5.m4a',
-//       'tracks/track6.m4a',
-//     ],
-//     finishedLoading
-// );
-//
-// bufferLoader.load();
-//
-// function finishedLoading(bufferList){
-//     for(var i=0; i<bufferList.length;i++){
-//         tracks[i].source.buffer = bufferList[i];
-//     }
-//     console.log(bufferList)
-//
-// }
-
 function summonTrack(filename,x,y,z){
     var track = {};
-    track.source = audioCtx.createBufferSource();
+
+    track.fx=[
+                {type:'lowpass',isOn:false,cutoff:0},
+                {type:'highpass',isOn:false,cutoff:0}
+            ];
+
     track.volume = audioCtx.createGain();
     track.filename = filename;
     track.isPlaying = false;
-    //track.source.loop = true;
-    track.source.connect(track.volume);
-
-    track.panner = audioCtx.createPanner();
-    track.volume.connect(track.panner);
-    track.panner.connect(mainVolume);
-
-    track.panner.setPosition(x,y,z);
+    track.x=x;
+    track.y=y;
+    track.z=z;
     tracks.push(track);
     spawnSphere(12, x,y,z, true);
+
     return track;
 }
+
 
 function requestTrack(track){
 
@@ -64,14 +43,11 @@ function requestTrack(track){
 
       // Create a buffer from the response ArrayBuffer.
       audioCtx.decodeAudioData(this.response, function onSuccess(buffer) {
-
         track.buffer = buffer;
+
         console.log("receiving buffer...");
-        // Make the sound source use the buffer and start playing it.
-        track.source.buffer = track.buffer;
-        //track.source.start(audioCtx.currentTime);
       }, function onFailure() {
-        alert("Decoding the audio buffer failed");
+        console.log("error loading %s", track.filename);
       });
     };
     request.send();
@@ -208,7 +184,7 @@ function init() {
 
     //Playa' please!
     player = new THREE.Mesh( geometries.playerGeometry, materials.basicBlack );
-    player.position.set(0,10,0);
+    player.position.set(254,10,0);
     player.add(camera);
     scene.add(player);
 
@@ -243,7 +219,7 @@ function init() {
     //GUI Control
     guidat = new function(){
         this.scale = 1;
-        this.stereo = true;
+        this.stereo = false;
         //Add more control variables
     }
 
@@ -268,7 +244,7 @@ function init() {
     //addGUI(guidat);
 
     //Track sphere
-    requestTrack(summonTrack('tracks/track1.m4a',0,12,0));
+    requestTrack(summonTrack('tracks/track1.mp3',0,12,0));
     requestTrack(summonTrack('tracks/track2.m4a',0,12,127));
     requestTrack(summonTrack('tracks/track6.m4a',0,12,254));
     requestTrack(summonTrack('tracks/track5.m4a',254,12,254));
@@ -400,7 +376,7 @@ function update(dt) {
             if(tracks[i].isPlaying)
                 drawDebugPlay(sphere, false)
             if(tracks[i].isPlaying == 100)
-                drawDebugPlay(sphere, true, true)
+                drawDebugPlay(sphere, false, true)
         }
     }
 
@@ -436,11 +412,71 @@ function render(dt) {
  * Helper Functions
  */
 
+function playTrack(id){
+    console.log("Trying to play new song: %s", tracks[id].filename);
+    tracks[id].isPlaying=true;
+    tracks[id].source = audioCtx.createBufferSource();
+    tracks[id].source.buffer = tracks[id].buffer;
+    tracks[id].source.connect(tracks[id].volume);
+
+    tracks[id].panner = audioCtx.createPanner();
+    tracks[id].volume.connect(tracks[id].panner);
+    tracks[id].panner.connect(mainVolume);
+    tracks[id].panner.setPosition(tracks[id].x,tracks[id].y,tracks[id].z);
+
+    tracks[id].source.start(0);
+}
+
+function applyFilter(id, type){
+        for(var i=0; i<tracks[id].fx.length;i++){
+            if(type == tracks[id].fx[i].type && !tracks[id].fx[i].isOn){
+                tracks[id].fx[i].isOn=true;
+                console.log("applying %s filter on track %d", type, id);
+            }
+            else if(type == tracks[id].fx[i].type && tracks[id].fx[i].isOn)
+                turnOffFilter(id, type);
+        }
+
+    if(tracks[id].filter)
+        tracks[id].filter.disconnect()
+    tracks[id].filter = audioCtx.createBiquadFilter();
+    tracks[id].filter.type = type;
+    tracks[id].filter.frequency.value = 0;
+
+    tracks[id].source.connect(tracks[id].filter);
+    tracks[id].filter.connect(tracks[id].volume);
+}
+
+function changeCutOff(id, filter_id){
+    tracks[id].filter.frequency.value = tracks[id].fx[filter_id].cutoff;
+}
+
+function turnOffFilter(id, type){
+
+    for(var i=0; i<tracks[id].fx.length;i++){
+        if(type == tracks[id].fx[i].type){
+            tracks[id].fx[i].isOn=false;
+            console.log("turning off %s filter on track %d", type, id);
+        }
+    }
+
+    if(tracks[id].filter)
+        tracks[id].filter.disconnect()
+    tracks[id].source.connect(tracks[id].volume);
+}
+
+function stopTrack(id){
+    tracks[id].isPlaying=false;
+    tracks[id].source.stop();
+}
+
 function pauseTrack(id){
+    tracks[id].isPlaying=100;
     tracks[id].source.disconnect();
 }
 
 function unpauseTrack(id){
+    tracks[id].isPlaying=true;
     tracks[id].source.connect(tracks[id].volume)
 }
 
@@ -719,7 +755,7 @@ function onMIDIMessage( event ) {
             guidat.scale = force;
             break;
         case 23:
-            player.position.set(2*force, player.position.y, player.position.z);
+            player.position.set(256-2*force, player.position.y, player.position.z);
             break;
         case 24:
             if(force<=64){
@@ -756,145 +792,400 @@ function onMIDIMessage( event ) {
                 switch (whichQuad()) {
                     case 0:
                         if(!tracks[1].isPlaying){
-                            tracks[1].source.start(audioCtx.currentTime);
-                            tracks[1].isPlaying=true;
+                            playTrack(1);
                         }
                         else{
-                            if(tracks[1].isPlaying != 100){
+                            if(tracks[1].isPlaying != 100)
                                 pauseTrack(1);
-                                tracks[1].isPlaying=100;
-                            }
-                            else{
+                            else
                                 unpauseTrack(1);
-                                tracks[1].isPlaying=true;
-                            }
                         }
                         break;
                     case 1:
                         if(!tracks[2].isPlaying){
-                            tracks[2].source.start(audioCtx.currentTime);
-                            tracks[2].isPlaying=true;
+                            playTrack(2);
                         }
                         else{
-                            if(tracks[2].isPlaying != 100){
+                            if(tracks[2].isPlaying != 100)
                                 pauseTrack(2);
-                                tracks[2].isPlaying=100;
-                            }
-                            else{
+                            else
                                 unpauseTrack(2);
-                                tracks[2].isPlaying=true;
-                            }
                         }
                         break;
                     case 2:
                         if(!tracks[4].isPlaying){
-                            tracks[4].source.start(audioCtx.currentTime);
-                            tracks[4].isPlaying=true;
+                            playTrack(4);
                         }
                         else{
-                            if(tracks[4].isPlaying != 100){
+                            if(tracks[4].isPlaying != 100)
                                 pauseTrack(4);
-                                tracks[4].isPlaying=100;
-                            }
-                            else{
+                            else
                                 unpauseTrack(4);
-                                tracks[4].isPlaying=true;
-                            }
                         }
                         break;
                     case 3:
                         if(!tracks[3].isPlaying){
-                            tracks[3].source.start(audioCtx.currentTime);
-                            tracks[3].isPlaying=true;
+                            playTrack(3);
                         }
                         else{
-                            if(tracks[3].isPlaying != 100){
+                            if(tracks[3].isPlaying != 100)
                                 pauseTrack(3);
-                                tracks[3].isPlaying=100;
-                            }
-                            else{
+                            else
                                 unpauseTrack(3);
-                                tracks[3].isPlaying=true;
-                            }
                         }
                         break;
                     default:
                 }
             }
             break;
+
+            // Left Cue Button
+            case 51:
+                if(force==127){
+                    switch (whichQuad()) {
+                        case 0:
+                            stopTrack(1);
+                            break;
+                        case 1:
+                            stopTrack(2);
+                            break;
+                        case 2:
+                            stopTrack(4);
+                            break;
+                        case 3:
+                            stopTrack(3);
+                            break;
+                        default:
+                    }
+                }
+                break;
+
+                // Right Cue Button
+                case 60:
+                    if(force==127){
+                        switch (whichQuad()) {
+                            case 0:
+                                stopTrack(0);
+                                break;
+                            case 1:
+                                stopTrack(1);
+                                break;
+                            case 2:
+                                stopTrack(5);
+                                break;
+                            case 3:
+                                stopTrack(4);
+                                break;
+                            default:
+                        }
+                    }
+                    break;
+
             // Right Play Button
             case 66:
                 if(force==127){
                     switch (whichQuad()) {
                         case 0:
-                            if(!tracks[0].isPlaying){
-                                console.log("Trying to play new song: %s", tracks[0].filename);
-                                tracks[0].isPlaying=true;
-                                tracks[0].source.start(audioCtx.currentTime);
-                            }
+                            if(!tracks[0].isPlaying)
+                                playTrack(0);
                             else{
-                                if(tracks[0].isPlaying != 100){
+                                if(tracks[0].isPlaying != 100)
                                     pauseTrack(0);
-                                    tracks[0].isPlaying=100;
-                                }
-                                else{
+                                else
                                     unpauseTrack(0);
-                                    tracks[0].isPlaying=true;
-                                }
                             }
                             break;
                         case 1:
-                            if(!tracks[1].isPlaying){
-                                tracks[1].source.start(audioCtx.currentTime);
-                                tracks[1].isPlaying=true;
-                            }
+                            if(!tracks[1].isPlaying)
+                                playTrack(1);
                             else{
-                                if(tracks[1].isPlaying != 100){
+                                if(tracks[1].isPlaying != 100)
                                     pauseTrack(1);
-                                    tracks[1].isPlaying=100;
-                                }
-                                else{
+                                else
                                     unpauseTrack(1);
-                                    tracks[1].isPlaying=true;
-                                }
                             }
                             break;
                         case 2:
-                            if(!tracks[5].isPlaying){
-                                tracks[5].source.start(audioCtx.currentTime);
-                                tracks[5].isPlaying=true;
-                            }
+                            if(!tracks[5].isPlaying)
+                                playTrack(5);
                             else{
-                                if(tracks[5].isPlaying != 100){
+                                if(tracks[5].isPlaying != 100)
                                     pauseTrack(5);
-                                    tracks[5].isPlaying=100;
-                                }
-                                else{
+                                else
                                     unpauseTrack(5);
-                                    tracks[5].isPlaying=true;
-                                }
                             }
                             break;
                         case 3:
-                            if(!tracks[4].isPlaying){
-                                tracks[4].source.start(audioCtx.currentTime);
-                                tracks[4].isPlaying=true;
-                            }
+                            if(!tracks[4].isPlaying)
+                                playTrack(4);
                             else{
-                                if(tracks[4].isPlaying != 100){
+                                if(tracks[4].isPlaying != 100)
                                     pauseTrack(4);
-                                    tracks[4].isPlaying=100;
-                                }
-                                else{
+                                else
                                     unpauseTrack(4);
-                                    tracks[4].isPlaying=true;
-                                }
                             }
                             break;
                         default:
                     }
                 }
                 break;
+
+            //Left Filter Pannel
+            case 27:
+            switch (whichQuad()) {
+                case 0:
+                    if(force == 1){
+                        tracks[1].fx[0].cutoff+=10;
+                        changeCutOff(1,0);
+                    }
+                    else if(force == 127){
+                        tracks[1].fx[0].cutoff-=10;
+                        changeCutOff(1,0);
+                    }
+                    break;
+                case 1:
+                    if(force == 1){
+                        tracks[2].fx[0].cutoff+=10;
+                        changeCutOff(2,0);
+                    }
+                    else if(force == 127){
+                        tracks[2].fx[0].cutoff-=10;
+                        changeCutOff(2,0);
+                    }
+                    break;
+                case 2:
+                    if(force == 1){
+                        tracks[4].fx[0].cutoff+=10;
+                        changeCutOff(4,0);
+                    }
+                    else if(force == 127){
+                        tracks[4].fx[0].cutoff-=10;
+                        changeCutOff(4,0);
+                    }
+                    break;
+                case 3:
+                    if(force == 1){
+                        tracks[3].fx[0].cutoff+=10;
+                        changeCutOff(3,0);
+                    }
+                    else if(force == 127){
+                        tracks[3].fx[0].cutoff-=10;
+                        changeCutOff(3,0);
+                    }
+                    break;
+            }
+            break;
+            case 89:
+            if(force == 127){
+                switch (whichQuad()) {
+                    case 0:
+                        applyFilter(1,'lowpass');
+                        break;
+                    case 1:
+                        applyFilter(2,'lowpass');
+                        break;
+                    case 2:
+                        applyFilter(4,'lowpass')
+                        break;
+                    case 3:
+                        applyFilter(3,'lowpass');
+                        break;
+                }
+            }
+            break;
+
+            //Right Filter Pannel
+            case 30:
+            switch (whichQuad()) {
+                case 0:
+                    if(force == 1){
+                        tracks[0].fx[0].cutoff+=10;
+                        changeCutOff(0,0);
+                    }
+                    else if(force == 127){
+                        tracks[0].fx[0].cutoff-=10;
+                        changeCutOff(0,0);
+                    }
+                    break;
+                case 1:
+                    if(force == 1){
+                        tracks[1].fx[0].cutoff+=10;
+                        changeCutOff(1,0);
+                    }
+                    else if(force == 127){
+                        tracks[1].fx[0].cutoff-=10;
+                        changeCutOff(1,0);
+                    }
+                    break;
+                case 2:
+                    if(force == 1){
+                        tracks[5].fx[0].cutoff+=10;
+                        changeCutOff(5,0);
+                    }
+                    else if(force == 127){
+                        tracks[5].fx[0].cutoff-=10;
+                        changeCutOff(5,0);
+                    }
+                    break;
+                case 3:
+                    if(force == 1){
+                        tracks[4].fx[0].cutoff+=10;
+                        changeCutOff(4,0);
+                    }
+                    else if(force == 127){
+                        tracks[4].fx[0].cutoff-=10;
+                        changeCutOff(4,0);
+                    }
+                break;
+            }
+            break;
+            case 93:
+            if(force == 127){
+                switch (whichQuad()) {
+                    case 0:
+                        applyFilter(0,'lowpass');
+                        break;
+                    case 1:
+                        applyFilter(1,'lowpass');
+                        break;
+                    case 2:
+                        applyFilter(5,'lowpass')
+                        break;
+                    case 3:
+                        applyFilter(4,'lowpass');
+                        break;
+                }
+            }
+            break;
+
+            //Left Filter Pannel
+            case 28:
+            switch (whichQuad()) {
+                case 0:
+                    if(force == 1){
+                        tracks[1].fx[1].cutoff+=10;
+                        changeCutOff(1,1);
+                    }
+                    else if(force == 127){
+                        tracks[1].fx[1].cutoff-=10;
+                        changeCutOff(1,1);
+                    }
+                    break;
+                case 1:
+                    if(force == 1){
+                        tracks[2].fx[1].cutoff+=10;
+                        changeCutOff(2,1);
+                    }
+                    else if(force == 127){
+                        tracks[2].fx[1].cutoff-=10;
+                        changeCutOff(2,1);
+                    }
+                    break;
+                case 2:
+                    if(force == 1){
+                        tracks[4].fx[1].cutoff+=10;
+                        changeCutOff(4,1);
+                    }
+                    else if(force == 127){
+                        tracks[4].fx[1].cutoff-=10;
+                        changeCutOff(4,1);
+                    }
+                    break;
+                case 3:
+                    if(force == 1){
+                        tracks[3].fx[1].cutoff+=10;
+                        changeCutOff(3,1);
+                    }
+                    else if(force == 127){
+                        tracks[3].fx[1].cutoff-=10;
+                        changeCutOff(3,1);
+                    }
+                    break;
+            }
+            break;
+            case 90:
+            if(force == 127){
+                switch (whichQuad()) {
+                    case 0:
+                        applyFilter(1,'highpass');
+                        break;
+                    case 1:
+                        applyFilter(2,'highpass');
+                        break;
+                    case 2:
+                        applyFilter(4,'highpass')
+                        break;
+                    case 3:
+                        applyFilter(3,'highpass');
+                        break;
+                }
+            }
+            break;
+
+            //Right Filter Pannel
+            case 31:
+            switch (whichQuad()) {
+                case 0:
+                    if(force == 1){
+                        tracks[0].fx[1].cutoff+=10;
+                        changeCutOff(0,1);
+                    }
+                    else if(force == 127){
+                        tracks[0].fx[1].cutoff-=10;
+                        changeCutOff(0,1);
+                    }
+                    break;
+                case 1:
+                    if(force == 1){
+                        tracks[1].fx[1].cutoff+=10;
+                        changeCutOff(1,1);
+                    }
+                    else if(force == 127){
+                        tracks[1].fx[1].cutoff-=10;
+                        changeCutOff(1,1);
+                    }
+                    break;
+                case 2:
+                    if(force == 1){
+                        tracks[5].fx[1].cutoff+=10;
+                        changeCutOff(5,1);
+                    }
+                    else if(force == 127){
+                        tracks[5].fx[1].cutoff-=10;
+                        changeCutOff(5,1);
+                    }
+                    break;
+                case 3:
+                    if(force == 1){
+                        tracks[4].fx[1].cutoff+=10;
+                        changeCutOff(4,1);
+                    }
+                    else if(force == 127){
+                        tracks[4].fx[1].cutoff-=10;
+                        changeCutOff(4,1);
+                    }
+                break;
+            }
+            break;
+            case 94:
+            if(force == 127){
+                switch (whichQuad()) {
+                    case 0:
+                        applyFilter(0,'highpass');
+                        break;
+                    case 1:
+                        applyFilter(1,'highpass');
+                        break;
+                    case 2:
+                        applyFilter(5,'highpass')
+                        break;
+                    case 3:
+                        applyFilter(4,'highpass');
+                        break;
+                }
+            }
+            break;
+
     }
 }
 
@@ -905,6 +1196,7 @@ function logMidiMessage(event){
     }
     console.log( str );
 }
+
 function startLoggingMIDIInput( midiAccess, indexOfPort ) {
   midiAccess.inputs.forEach( function(entry) {
       entry.onmidimessage = onMIDIMessage;
