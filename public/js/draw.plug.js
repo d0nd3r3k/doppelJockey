@@ -22,7 +22,15 @@ function drawCenterCross(){
 
 function drawDebugSphere(sphere, color){
     debugContext.beginPath();
-    debugContext.rect(-sphere.position.z+122,(sphere.position.x-122)/2.5,10,10);
+    debugContext.rect(-sphere.position.z+140,(sphere.position.x-80)/2.5,10,10);
+    debugContext.strokeStyle = color;
+    debugContext.closePath();
+	debugContext.stroke();
+}
+
+function drawDebugControllerOutline(x, y, color) {
+    debugContext.beginPath();
+    debugContext.rect(x + 120, (y - 150)/2.5, 175, 70);
     debugContext.strokeStyle = color;
     debugContext.closePath();
 	debugContext.stroke();

@@ -19,6 +19,8 @@ player,
 mapCube,
 mapTexture,
 cubeMaterial,
+djbox,
+button, //just to test
 clock,
 container,
 hemiLight,
@@ -35,7 +37,7 @@ var materials = (function(){
     m.basicGreen = new THREE.MeshBasicMaterial( { color: 0x4A8C66 } );
     m.basicRed = new THREE.MeshBasicMaterial( { color: 0x9E1A1A } );
     m.basicWhite = new THREE.MeshBasicMaterial( { color: 0xfefefe } );
-    m.lambert = new THREE.MeshLambertMaterial();
+    m.transparentWhite = new THREE.MeshBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
     m.cubeMaterial = new THREE.MeshLambertMaterial();
     return m;
 })();
@@ -131,7 +133,9 @@ function init() {
     //GUI Control
     guidat = new function(){
         this.scale = 1;
-        this.stereo = true;
+        this.stereo = false;
+        this.buttonX = 0.0;
+        this.buttonZ = 17.4;
         //Add more control variables
     }
 
@@ -139,10 +143,8 @@ function init() {
 	document.body.appendChild( container );
 
     var debugCanvas = document.createElement( 'canvas' );
-    //debugCanvas.width = 274;
-	//debugCanvas.height = 128;
-    debugCanvas.width = 274;
-    debugCanvas.height = 128;
+    debugCanvas.width = 305;
+    debugCanvas.height = 180;
 	debugCanvas.style.position = 'absolute';
 	debugCanvas.style.bottom = '10px';
 	debugCanvas.style.left = '50%';
@@ -158,14 +160,81 @@ function init() {
     //Cube for drawing canvas
     mapTexture = new THREE.Texture(debugCanvas);
     mapTexture.minFilter = THREE.LinearFilter;
-    cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, map: mapTexture });
+    cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, map: mapTexture });
 
     mapCube = new THREE.Mesh(new THREE.BoxGeometry(12, 12, 12), cubeMaterial);
-    mapCube.scale.set(1, 0.5, 0.5);
-    mapCube.position.set(0, 7, -15);
-    player.add(mapCube);
+    mapCube.scale.set(1, 0.5, 0.01);
+    mapCube.position.set(0, 10, -15);
+    //player.add(mapCube);
 
-    //addGUI(guidat);
+    // DJ Controller Box
+    var djtexture = THREE.ImageUtils.loadTexture('textures/controller.png');
+    djtexture.minFilter = THREE.LinearFilter;
+    var djmaterial = new THREE.MeshBasicMaterial({color:0xffffff, map:djtexture});
+    var geometry = new THREE.PlaneBufferGeometry(20, 12);
+    djbox = new THREE.Mesh(geometry, djmaterial);
+    djbox.rotation.x = -Math.PI/2;
+    djbox.position.set(0, -5, -22);
+    player.add(djbox);
+
+    var djControls = new THREE.Mesh();
+    player.add(djControls);
+    // 2 sets of buttons below each turny thing
+    djControls.add(createButton(.72, .4, 3.6, -11.22));
+    djControls.add(createButton(.72, .4, 4.6, -11.22));
+    djControls.add(createButton(.72, .4, -3.6, -11.22));
+    djControls.add(createButton(.72, .4, -4.6, -11.22));
+    // sliders
+    djControls.add(createSliderPiece(.7, .2, 0, -13));
+    djControls.add(createSliderPiece(.7, .2, -.95, -13));
+    djControls.add(createSliderPiece(.7, .2, .95, -13));
+    djControls.add(createSliderPiece(.2, .6, 0, -11.22));
+    // song selection cylinder
+    djControls.add(createKnob(.3, 0, -15.4));
+    // two queing buttons
+    djControls.add(createButton(.5, .2, -.96, -14.1));
+    djControls.add(createButton(.5, .2, .96, -14.1));
+    // top left controls
+    djControls.add(createButton(.85, .85, -2.1, -17.4));
+    djControls.add(createButton(.85, .85, -3.13, -17.4));
+    djControls.add(createButton(.85, .85, -4.12, -17.4));
+    djControls.add(createButton(.85, .85, -5.12, -17.4));
+    djControls.add(createKnob(.15, -2.1, -18.7));
+    djControls.add(createKnob(.15, -3.13, -18.7));
+    djControls.add(createKnob(.15, -4.2, -18.7));
+    djControls.add(createKnob(.15, -5.2, -18.7));
+    // top right controls
+    djControls.add(createButton(.85, .85, 2.1, -17.4));
+    djControls.add(createButton(.85, .85, 3.13, -17.4));
+    djControls.add(createButton(.85, .85, 4.12, -17.4));
+    djControls.add(createButton(.85, .85, 5.12, -17.4));
+    djControls.add(createKnob(.15, 2.1, -18.7));
+    djControls.add(createKnob(.15, 3.13, -18.7));
+    djControls.add(createKnob(.15, 4.2, -18.7));
+    djControls.add(createKnob(.15, 5.2, -18.7));
+
+    function createButton(width, length, x, y) {
+        var button = new THREE.Mesh(new THREE.BoxGeometry(width, 0.1, length), materials.transparentWhite);
+        button.position.set(x, 0, y);
+        return button;
+    }
+
+    function createSliderPiece(width, length, x, y) {
+        var sliderPiece = new THREE.Mesh(new THREE.BoxGeometry(width, 0.22, length), materials.transparentWhite);
+        sliderPiece.position.set(x, 0, y);
+        return sliderPiece;
+    }
+
+    function createKnob(radius, x, y) {
+        var knob = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, .5, 32), materials.transparentWhite);
+        knob.position.set(x, 0, y);
+        return knob;
+    }
+
+    // XX TESTING PURPOSES. Pull the player out to see big picture
+    //player.position.set(70, 10, 0);
+
+    addGUI(guidat);
 
     //Track sphere
     spawnSphere(12,0,12,0,true);
@@ -269,8 +338,7 @@ function update(dt) {
 	debugContext.beginPath();
 
 	// camera
-	debugContext.rect( -player.position.z+125, (player.position.x-114)/2.5, 4, 4 );
-
+	debugContext.rect( -player.position.z+143, (player.position.x-74)/2.5, 4, 4 );
 	debugContext.closePath();
 	debugContext.stroke();
 
@@ -280,25 +348,34 @@ function update(dt) {
         drawDebugSphere(sphere, 'white');
     }
 
-    switch (whichQuad()) {
+
+    controllerQuadrant = whichQuad();
+    var whichSphere;
+    switch (controllerQuadrant) {
         case 0:
             drawDebugSphere(spheres[0], 'red');
             drawDebugSphere(spheres[1], 'red');
+            whichSphere = 1;
             break;
         case 1:
             drawDebugSphere(spheres[1], 'red');
             drawDebugSphere(spheres[2], 'red');
+            whichSphere = 2;
             break;
         case 2:
             drawDebugSphere(spheres[4], 'red');
             drawDebugSphere(spheres[5], 'red');
+            whichSphere = 4;
             break;
         case 3:
             drawDebugSphere(spheres[3], 'red');
             drawDebugSphere(spheres[4], 'red');
+            whichSphere = 3;
             break;
         default:
     }
+    drawDebugControllerOutline(-spheres[whichSphere].position.z,
+                                spheres[whichSphere].position.x, 'red');
 }
 
 function render(dt) {
@@ -335,11 +412,17 @@ function unpauseTrack(id){
 
  function addGUI(datObj){
      var gui = new dat.GUI();
-     var customContainer = document.getElementById('guiDat');
-     customContainer.appendChild(gui.domElement);
+     //var customContainer = document.getElementById('guiDat');
+     document.body.appendChild(gui.domElement);
      gui.add(datObj, 'stereo', true);
      gui.add(datObj, 'scale', 0.1, 40).onChange(function(v){
          sendMessage(v);
+     });
+     gui.add(datObj, 'buttonX', -10, 10).onChange(function(v) {
+         button.position.x = v;
+     });
+     gui.add(datObj, 'buttonZ', 10, 20).onChange(function(v) {
+         button.position.z = -v;
      });
  }
 
