@@ -93,7 +93,7 @@ function spawnCubismTest(){
     spawnCube(3, 10, 10, 20);
 }
 
-function spawnSphere(scale, x, y, z, isTrack){
+function spawnSphere(scale, x, y, z, isTrack, cluster){
     var basicSphere = new THREE.SphereGeometry(scale, 32, 32);
     var material;
 
@@ -104,10 +104,16 @@ function spawnSphere(scale, x, y, z, isTrack){
 
     var s = new THREE.Mesh( basicSphere, material );
     s.position.set(x, y, z);
-    scene.add(s);
+
+    if (cluster)
+        cluster.add(s)
+    else
+        scene.add(s);
 
     if(isTrack)
         spheres.push(s);
+
+    return s;
 }
 
 function animateBlock(time){
