@@ -40,8 +40,8 @@ var materials = (function(){
     m.basicWhite = new THREE.MeshBasicMaterial( { color: 0xfefefe } );
     m.transparentWhite = new THREE.MeshBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
     m.cubeMaterial = new THREE.MeshLambertMaterial();
-    m.leftSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true, transparent: true, opacity: .9 } );
-    m.rightSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true, transparent: true, opacity: 0.1 } );
+    m.leftSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true, transparent: true, opacity: 0.1 } );
+    m.rightSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true, transparent: true, opacity: 0.9 } );
     m.trackSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.1 } );
     return m;
 })();
@@ -61,8 +61,8 @@ var geometries = (function(){
 
 var djControls = (function() {
     var djc = {};
-    djc.leftSphereID = 0;
-    djc.rightSphereID = 1;
+    djc.leftSphereID = 1;
+    djc.rightSphereID = 2;
 
     djc.mesh = new THREE.Mesh();
     // 2 sets of buttons below each turny thing
@@ -157,7 +157,7 @@ var djControls = (function() {
         slider.prevMidi = midiVal;
     }
 
-    djc.xSlider = spawnSlider(.3, .9, -1.13, -16.5, -1.13, 1.13);
+    djc.xSlider = spawnSlider(.3, .9, 1.13, -16.5, -1.13, 1.13);
     djc.ySlider = spawnSlider(.9, .3, 0, -17.75, 17.75, 19.8);
     djc.lSlider = spawnSlider(.9, .3, -1.4, -19.2, 17.75, 19.8);
     djc.rSlider = spawnSlider(.9, .3, 1.4, -19.2, 17.75, 19.8);
@@ -171,7 +171,7 @@ var djControls = (function() {
         s.horizontal = width < length;    // check orientation
         s.mesh = createSliderPiece(width, length, x, y);
         s.range = [min, max];
-        s.prevMidi = 0;
+        s.prevMidi = s.horizontal ? 255:0;
         return s;
     }
     function midiToSlider(midiVal, sliderRange) {
@@ -295,7 +295,7 @@ function init() {
 
     //Playa' please!
     player = new THREE.Mesh( geometries.playerGeometry, materials.basicBlack );
-    player.position.set(0,10,0);
+    player.position.set(0,10,-12.2);
     player.add(camera);
     scene.add(player);
 
@@ -334,7 +334,7 @@ function init() {
         this.testSphereX = -20;
         this.testSphereY = 12;
         this.testSphereZ = 0;
-        this.xSlider = 0;
+        this.xSlider = 255;
         this.ySlider = 0;
         //Add more control variables
     }
@@ -397,9 +397,9 @@ function init() {
     spawnSphere(2.8,-36,5,6.1,true, spheresGrid);
 
     // by default, 0 and 1 are in the DJ controller
-    spheres[0].material = materials.leftSphereMaterial;
-    spheres[1].material = materials.rightSphereMaterial;
-    spheres[2].material = materials.trackSphereMaterial;
+    spheres[1].material = materials.leftSphereMaterial;
+    spheres[2].material = materials.rightSphereMaterial;
+    spheres[0].material = materials.trackSphereMaterial;
     spheres[3].material = materials.trackSphereMaterial;
     spheres[4].material = materials.trackSphereMaterial;
     spheres[5].material = materials.trackSphereMaterial;
