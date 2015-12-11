@@ -841,7 +841,7 @@ function onMIDIMessage( event ) {
                 trackSelector++;
             else
                 trackSelector--;
-            console.log(trackSelector%(skySpheres.length-1));    
+            console.log(trackSelector%(skySpheres.length-1));
             highlightSphere(trackSelector%(skySpheres.length-1));
             break;
         case 52:
