@@ -27,6 +27,7 @@ var io = require('socket.io')(server);
  */
 
 server.listen(port);
+
 server.on('error', onError);
 server.on('listening', onListening);
 
@@ -114,6 +115,18 @@ io.on('connection', function (socket) {
   socket.on('config', function(data){
     io.emit('init', control);
   });
+
+  socket.on('horizontal', function(data){
+      io.emit('h',data);
+  });
+
+  socket.on('vertical', function(data){
+      io.emit('v',data);
+  })
+
+  socket.on('track', function(data){
+      io.emit('t',data);
+  })
 });
 
 
