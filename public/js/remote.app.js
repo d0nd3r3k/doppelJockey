@@ -35,8 +35,9 @@ var socket = io.connect(sHost);
 var materials = (function(){
    var m = {};
    m.basicBlack = new THREE.MeshBasicMaterial( { color: 0x000000, transparent: true, opacity: 0.1 } );
-   m.basicGreen = new THREE.MeshBasicMaterial( { color: 0x4A8C66 } );
-   m.basicRed = new THREE.MeshBasicMaterial( { color: 0x9E1A1A } );
+   m.basicGreen = new THREE.MeshBasicMaterial( { color: 0x4A8C66, transparent: true, opacity: 0.8 } );
+   m.basicBlue = new THREE.MeshBasicMaterial( { color: 0x4A668C, transparent: true, opacity: 0.8 } );
+   m.basicRed = new THREE.MeshBasicMaterial( { color: 0x9E1A1A, transparent: true, opacity: 0.8 } );
    m.basicWhite = new THREE.MeshBasicMaterial( { color: 0xfefefe } );
    m.transparentWhite = new THREE.MeshBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
    m.cubeMaterial = new THREE.MeshLambertMaterial();
@@ -66,10 +67,19 @@ var djControls = (function() {
 
    djc.mesh = new THREE.Mesh();
    // 2 sets of buttons below each turny thing
-   djc.mesh.add(createButton(1.1, .5, -5.4, -16.62));
-   djc.mesh.add(createButton(1.1, .5, -6.76, -16.62));
-   djc.mesh.add(createButton(1.1, .5, 5.4, -16.62));
-   djc.mesh.add(createButton(1.1, .5, 6.76, -16.62));
+   djc.leftButtons = {
+       play : createButton(1.1, .5, -5.4, -16.62),
+       cue : createButton(1.1, .5, -6.76, -16.62)
+   }
+   djc.rightButtons = {
+       play : createButton(1.1, .5, 6.76, -16.62),
+       cue : createButton(1.1, .5, 5.4, -16.62)
+   }
+   // djc.leftPlayButton = createButton(1.1, .5, -5.4, -16.62);
+   // djc.leftCueButton = createButton(1.1, .5, -6.76, -16.62);
+   // djc.rightPlayButton = createButton(1.1, .5, 6.76, -16.62);
+   // djc.rightCueButton = createButton(1.1, .5, 5.4, -16.62)
+
    // song selection cylinder
    djc.mesh.add(createKnob(.45, 0, -22.4));
    // two queing buttons
@@ -161,10 +171,6 @@ var djControls = (function() {
    djc.ySlider = spawnSlider(.9, .3, 0, -17.75, 17.75, 19.8);
    djc.lSlider = spawnSlider(.9, .3, -1.4, -19.2, 17.75, 19.8);
    djc.rSlider = spawnSlider(.9, .3, 1.4, -19.2, 17.75, 19.8);
-   djc.mesh.add(djc.xSlider.mesh);
-   djc.mesh.add(djc.ySlider.mesh);
-   djc.mesh.add(djc.lSlider.mesh);
-   djc.mesh.add(djc.rSlider.mesh);
 
    function spawnSlider(width, length, x, y, min, max) {
        var s = {};
@@ -181,11 +187,13 @@ var djControls = (function() {
    function createSliderPiece(width, length, x, y) {
        var sliderPiece = new THREE.Mesh(new THREE.BoxGeometry(width, 0.22, length), materials.transparentWhite);
        sliderPiece.position.set(x, -4.7, y);
+       djc.mesh.add(sliderPiece);
        return sliderPiece;
    }
    function createButton(width, length, x, y) {
        var button = new THREE.Mesh(new THREE.BoxGeometry(width, 0.1, length), materials.transparentWhite);
        button.position.set(x, -4.85, y);
+       djc.mesh.add(button);
        return button;
    }
    function createKnob(radius, x, y) {
@@ -265,7 +273,22 @@ socket.on('h', function(data){
 });
 
 socket.on('t', function(data){
-       console.log(data);
+       console.log(data)
+       var buttons;
+       if (data.side == 'l')
+           buttons = djControls.leftButtons;
+       else
+           buttons = djControls.rightButtons;
+       if (data.action == 'play') {
+           buttons.play.material = materials.basicGreen;
+           buttons.cue.material = materials.transparentWhite;
+       } else if (data.action == 'pause') {
+           buttons.play.material = materials.basicBlue;
+           buttons.cue.material = materials.transparentWhite;
+       } else if (data.action == 'cue') {
+           buttons.play.material = materials.transparentWhite
+           buttons.cue.material = materials.basicRed;
+       }
 });
 
 socket.on('apply', function (data) {
