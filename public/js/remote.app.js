@@ -103,7 +103,7 @@ var djControls = (function() {
             materials.rightSphereMaterial.opacity = Math.max(rSphereOpacity, 0.1);
             materials.leftSphereMaterial.opacity = Math.max(1-rSphereOpacity, 0.1);
 
-            if ((midiVal < 127) && (slider.prevMidi > 127)) {
+            if ((midiVal > 127) && (slider.prevMidi < 127)) {
                 var tween = new TWEEN.Tween({v: player.position.z})
                                 .to({v: -12.2}, 300)
                                 .easing(TWEEN.Easing.Cubic.In)
@@ -114,7 +114,7 @@ var djControls = (function() {
                                     player.position.z = this.v;
                                 }).start();
             }
-            else if ((midiVal > 127) && (slider.prevMidi < 127)) {
+            else if ((midiVal < 127) && (slider.prevMidi > 127)) {
                 var tween = new TWEEN.Tween({v: player.position.z})
                                 .to({v: 0}, 300)
                                 .easing(TWEEN.Easing.Cubic.In)
@@ -171,7 +171,7 @@ var djControls = (function() {
         s.horizontal = width < length;    // check orientation
         s.mesh = createSliderPiece(width, length, x, y);
         s.range = [min, max];
-        s.prevMidi = 0;
+        s.prevMidi = s.horizontal ? 255 : 0;
         return s;
     }
     function midiToSlider(midiVal, sliderRange) {
@@ -194,6 +194,7 @@ var djControls = (function() {
         return knob;
     }
     function setControllerSpheres(horiz) {
+        console.log("swap spheres");
         spheres[djc.rightSphereID].material = materials.trackSphereMaterial;
         spheres[djc.leftSphereID].material = materials.trackSphereMaterial;
         var r = djc.rightSphereID;
@@ -598,7 +599,9 @@ function unpauseTrack(id){
     //      testSphere.position.z = v;
     //  });
      gui.add(datObj, 'xSlider', 0, 255).onChange(function(v) {
-         djControls.setSliderValue(djControls.xSlider, v);
+         var v2 = 255-v;
+         console.log("setting slider value " + v2);
+         djControls.setSliderValue(djControls.xSlider, 255-v);
      });
      gui.add(datObj, 'ySlider', 0, 255).onChange(function(v) {
          djControls.setSliderValue(djControls.ySlider, v);
