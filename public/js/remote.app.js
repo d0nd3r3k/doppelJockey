@@ -174,10 +174,10 @@ var djControls = (function() {
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
                                 .onStart(function() {
-                                    djc.rightButtons.play.material = materials.transparentWhite;
-                                    djc.rightButtons.cue.material = materials.transparentWhite;
                                     djc.leftButtons.play.material = djc.rightButtons.play.material;
                                     djc.leftButtons.cue.material = djc.rightButtons.cue.material;
+                                    djc.rightButtons.play.material = materials.transparentWhite;
+                                    djc.rightButtons.cue.material = materials.transparentWhite;
                                     songInfo.setLeftSong(songInfo.rightSong);
                                     songInfo.clearRightSong();
                                     //setControllerSpheres(true);
