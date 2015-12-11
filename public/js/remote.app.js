@@ -21,6 +21,7 @@ mapTexture,
 cubeMaterial,
 djbox,
 songPlane,
+songContext,
 songMaterial,
 button, //just to test
 testSphere, //just to test
@@ -60,6 +61,42 @@ var geometries = (function(){
    g.tork = new THREE.TorusKnotGeometry(getRandomInt(3,4)*g.scale, getRandomInt(1,3)*g.scale,100*g.scale,getRandomInt(10,16)*g.scale);
    g.iso = new THREE.IcosahedronGeometry(g.scale);
    return g;
+})();
+
+var songInfo = (function() {
+    var s = {};
+    s.context = null;
+    s.browsingSong = "";
+    s.leftSong = "";
+    s.rightSong = "";
+    s.setBrowsingSong = function(title) {
+        s.clearBrowsingSong();
+        s.context.fillText(title, 120, 69);
+        s.browsingSong = title;
+    };
+    s.setLeftSong = function(title) {
+        s.clearLeftSong();
+        s.context.fillText(title, 80, 499);
+        s.leftSong = title;
+    };
+    s.setRightSong = function(title) {
+        s.clearRightSong();
+        songContext.fillText(title, 330, 499);
+        s.rightSong = title;
+    };
+    s.clearBrowsingSong = function() {
+        s.context.clearRect(0, 60, 500, 15);
+        s.browsingSong = "";
+    };
+    s.clearLeftSong = function() {
+        s.context.clearRect(70, 490, 235, 20);
+        s.leftSong = "";
+    };
+    s.clearRightSong = function() {
+        s.context.clearRect(320, 490, 235, 20);
+        s.rightSong = "";
+    };
+    return s;
 })();
 
 var djControls = (function() {
@@ -265,6 +302,11 @@ socket.on('t', function(data){
        }
 });
 
+socket.on('b', function(data) {
+    console.log(data);
+    songInfo.setBrowsingSong(data);
+});
+
 socket.on('apply', function (data) {
    //Add testing controls handled by dat gui
    guidat.scale = data;
@@ -377,13 +419,15 @@ function init() {
    songCanvas.style.visibility = 'hidden';
    container.appendChild(songCanvas);
 
-   var songContext = songCanvas.getContext('2d');
+   songContext = songCanvas.getContext('2d');
    songContext.font = "12px Monospace";
    songContext.fillStyle = "rgba(255,255,255,0.95)";
    songContext.fillText('Browsing:', 120, 50);
-   songContext.fillText('House of the Rising Sun', 120, 69);
-   songContext.fillText('L: DD Requin', 55, 499);
-   songContext.fillText('R: XX Requin', 305, 499);
+   //songContext.fillText('House of the Rising Sun', 120, 69);
+   songContext.fillText('L:', 55, 499);
+   songContext.fillText('R:', 305, 499);
+   songInfo.context = songContext;
+
 
    var songTexture = new THREE.Texture(songCanvas);
    mapTexture.minFilter = THREE.LinearFilter;
