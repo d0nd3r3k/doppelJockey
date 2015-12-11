@@ -152,7 +152,7 @@ var djControls = (function() {
            materials.rightSphereMaterial.opacity = Math.max(rSphereOpacity, 0.1);
            materials.leftSphereMaterial.opacity = Math.max(1-rSphereOpacity, 0.1);
 
-           if ((midiVal >= 127) && (slider.prevMidi <= 127)) {         // shift spheres left
+           if ((midiVal >= 127) && (slider.prevMidi < 127)) {         // shift spheres left
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: -12.2}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
@@ -169,7 +169,7 @@ var djControls = (function() {
                                    player.position.z = this.v;
                                }).start();
            }
-           else if ((midiVal < 127) && (slider.prevMidi > 127)) {     // shift spheres right
+           else if ((midiVal < 127) && (slider.prevMidi >= 127)) {     // shift spheres right
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
