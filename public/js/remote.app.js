@@ -195,7 +195,8 @@ var djControls = (function() {
                                    djc.rightButtons.play.material = materials.transparentWhite;
                                    djc.leftButtons.cue.material = materials.transparentWhite;
                                    djc.rightButtons.cue.material = materials.transparentWhite;
-                                    //setControllerSpheres(false);
+                                   songInfo.setLeftSong(songInfo.rightSong);
+                                   songInfo.clearRightSong();
                                 })
                                .onUpdate(function() {
                                    player.position.x = this.v;
@@ -211,7 +212,8 @@ var djControls = (function() {
                                     djc.rightButtons.play.material = materials.transparentWhite;
                                     djc.leftButtons.cue.material = materials.transparentWhite;
                                     djc.rightButtons.cue.material = materials.transparentWhite;
-                                    //setControllerSpheres(false);
+                                    songInfo.setRightSong(songInfo.leftSong);
+                                    songInfo.clearLeftSong();
                                 })
                                .onUpdate(function() {
                                    player.position.x = this.v;
@@ -286,10 +288,14 @@ socket.on('h', function(data){
 socket.on('t', function(data){
        console.log(data)
        var buttons;
-       if (data.side == 'l')
+       if (data.side == 'l') {
            buttons = djControls.leftButtons;
-       else
+           songInfo.setLeftSong(data.filename);
+       }
+       else {
            buttons = djControls.rightButtons;
+           songInfo.setRightSong(data.filename);
+       }
        if (data.action == 'play') {
            buttons.play.material = materials.basicGreen;
            buttons.cue.material = materials.transparentWhite;
