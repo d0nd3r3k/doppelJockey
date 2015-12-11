@@ -107,9 +107,9 @@ var djControls = (function() {
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: -12.2}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
-                               .onStart(function() {
-                                   setControllerSpheres(true);
-                               })
+                            //    .onStart(function() {
+                            //        setControllerSpheres(true);
+                            //    })
                                .onUpdate(function() {
                                    player.position.z = this.v;
                                }).start();
@@ -118,9 +118,9 @@ var djControls = (function() {
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
-                               .onStart(function() {
-                                   setControllerSpheres(true);
-                               })
+                            //    .onStart(function() {
+                            //        setControllerSpheres(true);
+                            //    })
                                .onUpdate(function() {
                                    player.position.z = this.v;
                                }).start();
@@ -133,9 +133,9 @@ var djControls = (function() {
                var tween = new TWEEN.Tween({v: player.position.x})
                                .to({v: -16}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
-                               .onStart(function() {
-                                   setControllerSpheres(false);
-                               })
+                            //    .onStart(function() {
+                            //        setControllerSpheres(false);
+                            //    })
                                .onUpdate(function() {
                                    player.position.x = this.v;
                                }).start();
@@ -145,9 +145,9 @@ var djControls = (function() {
                var tween = new TWEEN.Tween({v: player.position.x})
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
-                               .onStart(function() {
-                                   setControllerSpheres(false);
-                               })
+                            //    .onStart(function() {
+                            //        setControllerSpheres(false);
+                            //    })
                                .onUpdate(function() {
                                    player.position.x = this.v;
                                }).start();
@@ -193,50 +193,50 @@ var djControls = (function() {
        knob.position.set(x, -4.6, y);
        return knob;
    }
-   function setControllerSpheres(horiz) {
-       console.log("swap spheres");
-       spheres[djc.rightSphereID].material = materials.trackSphereMaterial;
-       spheres[djc.leftSphereID].material = materials.trackSphereMaterial;
-       var r = djc.rightSphereID;
-       if (r == 1) {
-           if (horiz) {
-               djc.rightSphereID = 2;
-               djc.leftSphereID = 1;
-           } else {
-               djc.rightSphereID = 4;
-               djc.leftSphereID = 5;
-           }
-       }
-       else if (r == 2) {
-           if (horiz) {
-               djc.rightSphereID = 1;
-               djc.leftSphereID = 0;
-           } else {
-               djc.rightSphereID = 3;
-               djc.leftSphereID = 4;
-           }
-       }
-       else if (r == 3) {
-           if (horiz) {
-               djc.rightSphereID = 4;
-               djc.leftSphereID = 5;
-           } else {
-               djc.rightSphereID = 2;
-               djc.leftSphereID = 1;
-           }
-       }
-       else if (r == 4) {
-           if (horiz) {
-               djc.rightSphereID = 3;
-               djc.leftSphereID = 4;
-           } else {
-               djc.rightSphereID = 1;
-               djc.leftSphereID = 0;
-           }
-       }
-       spheres[djc.rightSphereID].material = materials.rightSphereMaterial;
-       spheres[djc.leftSphereID].material = materials.leftSphereMaterial;
-   }
+   // function setControllerSpheres(horiz) {
+   //     console.log("swap spheres");
+   //     spheres[djc.rightSphereID].material = materials.trackSphereMaterial;
+   //     spheres[djc.leftSphereID].material = materials.trackSphereMaterial;
+   //     var r = djc.rightSphereID;
+   //     if (r == 1) {
+   //         if (horiz) {
+   //             djc.rightSphereID = 2;
+   //             djc.leftSphereID = 1;
+   //         } else {
+   //             djc.rightSphereID = 4;
+   //             djc.leftSphereID = 5;
+   //         }
+   //     }
+   //     else if (r == 2) {
+   //         if (horiz) {
+   //             djc.rightSphereID = 1;
+   //             djc.leftSphereID = 0;
+   //         } else {
+   //             djc.rightSphereID = 3;
+   //             djc.leftSphereID = 4;
+   //         }
+   //     }
+   //     else if (r == 3) {
+   //         if (horiz) {
+   //             djc.rightSphereID = 4;
+   //             djc.leftSphereID = 5;
+   //         } else {
+   //             djc.rightSphereID = 2;
+   //             djc.leftSphereID = 1;
+   //         }
+   //     }
+   //     else if (r == 4) {
+   //         if (horiz) {
+   //             djc.rightSphereID = 3;
+   //             djc.leftSphereID = 4;
+   //         } else {
+   //             djc.rightSphereID = 1;
+   //             djc.leftSphereID = 0;
+   //         }
+   //     }
+   //     spheres[djc.rightSphereID].material = materials.rightSphereMaterial;
+   //     spheres[djc.leftSphereID].material = materials.leftSphereMaterial;
+   // }
    return djc;
 })();
 
