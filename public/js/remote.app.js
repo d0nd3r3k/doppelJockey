@@ -40,6 +40,9 @@ var materials = (function(){
     m.basicWhite = new THREE.MeshBasicMaterial( { color: 0xfefefe } );
     m.transparentWhite = new THREE.MeshBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.5 } );
     m.cubeMaterial = new THREE.MeshLambertMaterial();
+    m.leftSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true, transparent: true, opacity: .9 } );
+    m.rightSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true, transparent: true, opacity: 0.1 } );
+    m.trackSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.2 } );
     return m;
 })();
 
@@ -58,8 +61,10 @@ var geometries = (function(){
 
 var djControls = (function() {
     var djc = {};
-    djc.mesh = new THREE.Mesh();
+    djc.leftSphereID = 0;
+    djc.rightSphereID = 1;
 
+    djc.mesh = new THREE.Mesh();
     // 2 sets of buttons below each turny thing
     djc.mesh.add(createButton(1.1, .5, -5.4, -16.62));
     djc.mesh.add(createButton(1.1, .5, -6.76, -16.62));
@@ -94,10 +99,17 @@ var djControls = (function() {
         sliderVal = midiToSlider(midiVal, slider.range);
         if (slider.horizontal) {
             slider.mesh.position.x = sliderVal;
+            rSphereOpacity = (midiVal%127)/127;
+            materials.rightSphereMaterial.opacity = Math.max(rSphereOpacity, 0.1);
+            materials.leftSphereMaterial.opacity = Math.max(1-rSphereOpacity, 0.1);
+
             if ((midiVal > 127) && (slider.prevMidi < 127)) {
                 var tween = new TWEEN.Tween({v: player.position.z})
                                 .to({v: -12.2}, 300)
                                 .easing(TWEEN.Easing.Cubic.In)
+                                .onStart(function() {
+                                    setControllerSpheres(true);
+                                })
                                 .onUpdate(function() {
                                     player.position.z = this.v;
                                 }).start();
@@ -106,6 +118,9 @@ var djControls = (function() {
                 var tween = new TWEEN.Tween({v: player.position.z})
                                 .to({v: 0}, 300)
                                 .easing(TWEEN.Easing.Cubic.In)
+                                .onStart(function() {
+                                    setControllerSpheres(true);
+                                })
                                 .onUpdate(function() {
                                     player.position.z = this.v;
                                 }).start();
@@ -118,6 +133,9 @@ var djControls = (function() {
                 var tween = new TWEEN.Tween({v: player.position.x})
                                 .to({v: -16}, 300)
                                 .easing(TWEEN.Easing.Cubic.In)
+                                .onStart(function() {
+                                    setControllerSpheres(false);
+                                })
                                 .onUpdate(function() {
                                     player.position.x = this.v;
                                 }).start();
@@ -127,6 +145,9 @@ var djControls = (function() {
                 var tween = new TWEEN.Tween({v: player.position.x})
                                 .to({v: 0}, 300)
                                 .easing(TWEEN.Easing.Cubic.In)
+                                .onStart(function() {
+                                    setControllerSpheres(false);
+                                })
                                 .onUpdate(function() {
                                     player.position.x = this.v;
                                 }).start();
@@ -136,10 +157,8 @@ var djControls = (function() {
         slider.prevMidi = midiVal;
     }
 
-
-
-    djc.xSlider = spawnSlider(.3, .9, 0, -16.5, -1.13, 1.13);
-    djc.ySlider = spawnSlider(.9, .3, 0, -19.2, 17.75, 19.8);
+    djc.xSlider = spawnSlider(.3, .9, -1.13, -16.5, -1.13, 1.13);
+    djc.ySlider = spawnSlider(.9, .3, 0, -17.75, 17.75, 19.8);
     djc.lSlider = spawnSlider(.9, .3, -1.4, -19.2, 17.75, 19.8);
     djc.rSlider = spawnSlider(.9, .3, 1.4, -19.2, 17.75, 19.8);
     djc.mesh.add(djc.xSlider.mesh);
@@ -174,7 +193,49 @@ var djControls = (function() {
         knob.position.set(x, -4.6, y);
         return knob;
     }
-
+    function setControllerSpheres(horiz) {
+        spheres[djc.rightSphereID].material = materials.trackSphereMaterial;
+        spheres[djc.leftSphereID].material = materials.trackSphereMaterial;
+        var r = djc.rightSphereID;
+        if (r == 1) {
+            if (horiz) {
+                djc.rightSphereID = 2;
+                djc.leftSphereID = 1;
+            } else {
+                djc.rightSphereID = 4;
+                djc.leftSphereID = 5;
+            }
+        }
+        else if (r == 2) {
+            if (horiz) {
+                djc.rightSphereID = 1;
+                djc.leftSphereID = 0;
+            } else {
+                djc.rightSphereID = 3;
+                djc.leftSphereID = 4;
+            }
+        }
+        else if (r == 3) {
+            if (horiz) {
+                djc.rightSphereID = 4;
+                djc.leftSphereID = 5;
+            } else {
+                djc.rightSphereID = 2;
+                djc.leftSphereID = 1;
+            }
+        }
+        else if (r == 4) {
+            if (horiz) {
+                djc.rightSphereID = 3;
+                djc.leftSphereID = 4;
+            } else {
+                djc.rightSphereID = 1;
+                djc.leftSphereID = 0;
+            }
+        }
+        spheres[djc.rightSphereID].material = materials.rightSphereMaterial;
+        spheres[djc.leftSphereID].material = materials.leftSphereMaterial;
+    }
     return djc;
 })();
 
@@ -260,8 +321,8 @@ function init() {
         this.testSphereX = -20;
         this.testSphereY = 12;
         this.testSphereZ = 0;
-        this.xSlider = 127;
-        this.ySlider = 127;
+        this.xSlider = 0;
+        this.ySlider = 0;
         //Add more control variables
     }
 
@@ -318,9 +379,14 @@ function init() {
     spawnSphere(2.8,-20,5,-18.3,true, spheresGrid);
 
     // ones in front
-    spawnSphere(2.8,-36,5,6.1,true, spheresGrid);
-    spawnSphere(2.8,-36,5,-6.1,true, spheresGrid);
     spawnSphere(2.8,-36,5,-18.3,true, spheresGrid);
+    spawnSphere(2.8,-36,5,-6.1,true, spheresGrid);
+    spawnSphere(2.8,-36,5,6.1,true, spheresGrid);
+
+    // by default, 0 and 1 are in the DJ controller
+    spheres[0].material = materials.leftSphereMaterial;
+    spheres[1].material = materials.rightSphereMaterial;
+
     //    testSphere = spawnSphere(2.8,-20,5,6.1,true, spheresGrid);
     // spawnSphere(12,-20,12,254,true);
     // spawnSphere(12,254,12,254,true);
