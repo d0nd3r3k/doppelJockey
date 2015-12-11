@@ -400,12 +400,12 @@ function init() {
    spawnSphere(2.8,-36,5,6.1,true, spheresGrid);
 
    // by default, 0 and 1 are in the DJ controller
-   spheres[1].material = materials.leftSphereMaterial;
-   spheres[2].material = materials.rightSphereMaterial;
-   spheres[0].material = materials.trackSphereMaterial;
-   spheres[3].material = materials.trackSphereMaterial;
-   spheres[4].material = materials.trackSphereMaterial;
-   spheres[5].material = materials.trackSphereMaterial;
+   // spheres[1].material = materials.leftSphereMaterial;
+   // spheres[2].material = materials.rightSphereMaterial;
+   // spheres[0].material = materials.trackSphereMaterial;
+   // spheres[3].material = materials.trackSphereMaterial;
+   // spheres[4].material = materials.trackSphereMaterial;
+   // spheres[5].material = materials.trackSphereMaterial;
 
    //    testSphere = spawnSphere(2.8,-20,5,6.1,true, spheresGrid);
    // spawnSphere(12,-20,12,254,true);
