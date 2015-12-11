@@ -115,8 +115,10 @@ var debugContext;
 var blocks=[];
 var spheres=[];
 var debugSpheres=[];
+var skySpheres=[];
 var sHost = window.location.origin;
 var socket = io.connect(sHost);
+var tracksList = JSON.parse(getList());
 var materials = (function(){
     var m = {};
     m.basicBlack = new THREE.MeshBasicMaterial( { color: 0x000000, transparent: true, opacity: 0.1 } );
@@ -320,8 +322,10 @@ function initWorldMap(){
 
     for(var i=0; i<2048; i++)
         spawnCube(getRandomInt(1,10),getRandomInt(-1000,1000),getRandomInt(120,600),getRandomInt(-1000,1000));
-    for(var i=0; i<24; i++)
-        spawnSphere(getRandomInt(6,16),getRandomInt(-1000,1000),getRandomInt(500,1000),getRandomInt(-1000,1000), false);
+
+
+    for(var i=0; i<tracksList.length; i++)
+        spawnSphere(getRandomInt(6,16),getRandomInt(-500,600),getRandomInt(500,600),getRandomInt(-500,600), false);
 }
 
 /*
@@ -508,17 +512,23 @@ function render(dt) {
      var material;
 
      if (isTrack)
-         material = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.2 } );
+         material = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true,transparent: true, opacity: 0.2 } );
      else
-         material = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.02 } );
+         material = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true,transparent: true, opacity: 0.02 } );
 
      var s = new THREE.Mesh( basicSphere, material );
      s.position.set(x, y, z);
      scene.add(s);
 
-     if(isTrack)
-         spheres.push(s);
+    if(isTrack)
+        spheres.push(s);
+    else
+        skySpheres.push(s)
  }
+
+function highlightSphere(index){
+    skySpheres[index].material.color.setHex(0xD01111);
+}
 
  function animateBlock(time){
      blocks[0].position.set(10, Math.sin(time*0.013)*10+5, 10);
@@ -615,6 +625,13 @@ function unpauseTrack(id){
 /*
  * Util functions
  */
+
+ function getList(){
+     var Httpreq = new XMLHttpRequest(); // a new request
+     Httpreq.open("GET",'tracks/list.json',false);
+     Httpreq.send(null);
+     return Httpreq.responseText;
+}
 
 function sendPlayerPosition(){
     socket.emit('position', player.position);
@@ -813,6 +830,9 @@ function onMIDIMessage( event ) {
             for (var i=0; i<spheres.length; i++){
                 spheres[i].rotateY(rotY/100%360);
             }
+            break;
+        case 26:
+            highlightSphere()
             break;
         case 52:
             if(force==127){

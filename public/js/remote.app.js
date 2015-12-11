@@ -260,7 +260,7 @@ socket.on('v', function(data){
 
 socket.on('h', function(data){
         console.log("move horizontal: %d", data)
-        djControls.setSliderValue(djControls.ySlider, data*2);
+        djControls.setSliderValue(djControls.xSlider, 255-data*2);
 });
 
 socket.on('t', function(data){
