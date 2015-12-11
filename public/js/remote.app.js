@@ -248,8 +248,21 @@ init();
  */
 
 socket.on('connect', function(){
+    console.log("connect!");
     if(guidat)
         socket.emit('control', guidat);
+});
+
+socket.on('v', function(data){
+        console.log("move vertical: %d", data)
+});
+
+socket.on('h', function(data){
+        console.log("move horizontal: %d", data)
+});
+
+socket.on('t', function(data){
+        console.log(data);
 });
 
 socket.on('apply', function (data) {
