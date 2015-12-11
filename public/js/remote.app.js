@@ -103,7 +103,7 @@ var djControls = (function() {
            materials.rightSphereMaterial.opacity = Math.max(rSphereOpacity, 0.1);
            materials.leftSphereMaterial.opacity = Math.max(1-rSphereOpacity, 0.1);
 
-           if ((midiVal > 127) && (slider.prevMidi < 127)) {
+           if ((midiVal >= 127) && (slider.prevMidi <= 127)) {
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: -12.2}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
@@ -114,7 +114,7 @@ var djControls = (function() {
                                    player.position.z = this.v;
                                }).start();
            }
-           else if ((midiVal < 127) && (slider.prevMidi > 127)) {
+           else if ((midiVal <= 127) && (slider.prevMidi >= 127)) {
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
@@ -129,7 +129,7 @@ var djControls = (function() {
        }
        else {
            slider.mesh.position.z = -sliderVal;
-           if ((midiVal > 127) && (slider.prevMidi < 127)) {
+           if ((midiVal >= 127) && (slider.prevMidi <= 127)) {
                var tween = new TWEEN.Tween({v: player.position.x})
                                .to({v: -16}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
@@ -141,7 +141,7 @@ var djControls = (function() {
                                }).start();
                //player.position.x = -16;
            }
-           else if ((midiVal < 127) && (slider.prevMidi > 127)) {
+           else if ((midiVal <= 127) && (slider.prevMidi >= 127)) {
                var tween = new TWEEN.Tween({v: player.position.x})
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
