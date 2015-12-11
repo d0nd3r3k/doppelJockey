@@ -255,10 +255,12 @@ socket.on('connect', function(){
 
 socket.on('v', function(data){
         console.log("move vertical: %d", data)
+        guidat.ySlider = data * 2;
 });
 
 socket.on('h', function(data){
         console.log("move horizontal: %d", data)
+        guidat.xSlider = data * 2;
 });
 
 socket.on('t', function(data){
