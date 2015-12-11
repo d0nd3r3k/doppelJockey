@@ -127,6 +127,10 @@ io.on('connection', function (socket) {
   socket.on('track', function(data){
       io.emit('t',data);
   })
+
+  socket.on('browse', function(data){
+      io.emit('b',data);
+  })
 });
 
 

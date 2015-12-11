@@ -53,17 +53,17 @@ function requestTrack(track){
     request.send();
 }
 
-function replaceTrack(track, f){
-
-    if(track.isPlaying)
-        track.source.stop();
-
-    track.source = audioCtx.createBufferSource();
-    track.buffer = undefined;
-    track.filename = f;
-    track.isPlaying=false;
-    track.source.connect(track.volume);
-    requestTrack(track);
+function replaceTrack(id, f){
+    console.log(tracks[id]);
+    console.log("replacing tack with %s",f);
+    if(tracks[id].isPlaying)
+        tracks[id].source.stop();
+    tracks[id].source = audioCtx.createBufferSource();
+    tracks[id].buffer = undefined;
+    tracks[id].filename = 'tracks/'+f;
+    tracks[id].isPlaying=false;
+    tracks[id].source.connect(tracks[id].volume);
+    requestTrack(tracks[id]);
 }
 // Webkit/blink browsers need prefix, Safari won't work without window.
 navigator.getUserMedia = navigator.getUserMedia ||
@@ -167,6 +167,9 @@ socket.on('t', function(data){
         console.log(data);
 });
 
+socket.on('b', function(data){
+        console.log(data);
+});
 
 socket.on('apply', function (data) {
     //Add testing controls handled by dat gui
@@ -532,6 +535,7 @@ function render(dt) {
 
 function highlightSphere(index){
     skySpheres[index].material.color.setHex(0xD01111);
+    sendBrowseTrack(index);
     for(var i=0; i<skySpheres.length;i++){
         if(i!=index)
             skySpheres[i].material.color.setHex(0xffffff);
@@ -651,6 +655,10 @@ function sendVerticalSlider(p){
 
 function sendHorizontalSlider(p){
     socket.emit('horizontal',p);
+}
+
+function sendBrowseTrack(id){
+    socket.emit('browse',skySpheres[id].filename);
 }
 
 function sendTrackStatus(id, action, side){
@@ -846,16 +854,49 @@ function onMIDIMessage( event ) {
                 trackSelector++;
             else
                 trackSelector--;
-            console.log(trackSelector%(skySpheres.length-1));
+            console.log(skySpheres[trackSelector%(skySpheres.length-1)].filename);
             highlightSphere(trackSelector%(skySpheres.length-1));
             break;
-        case 52:
+        //Load A - Right
+        case 75:
             if(force==127){
-                replaceTrack(tracks[0],'tracks/track6.m4a');
-
+                switch (whichQuad()) {
+                    case 0:
+                        replaceTrack(0,skySpheres[trackSelector%(skySpheres.length-1)].filename);
+                        break;
+                    case 1:
+                        replaceTrack(2,skySpheres[trackSelector%(skySpheres.length-1)].filename);
+                        break;
+                    case 2:
+                        replaceTrack(4,skySpheres[trackSelector%(skySpheres.length-1)].filename);
+                        break;
+                    case 3:
+                        replaceTrack(3,skySpheres[trackSelector%(skySpheres.length-1)].filename);
+                        break;
+                    default:
+                }
             }
             break;
-
+        //Load B - Left
+        case 52:
+            if(force==127){
+                switch (whichQuad()) {
+                    case 0:
+                        replaceTrack(0,skySpheres[trackSelector%(skySpheres.length-1)].filename);
+                        break;
+                    case 1:
+                        replaceTrack(1,skySpheres[trackSelector%(skySpheres.length-1)].filename);
+                        break;
+                    case 2:
+                        replaceTrack(5,skySpheres[trackSelector%(skySpheres.length-1)].filename);
+                        break;
+                    case 3:
+                        replaceTrack(4,skySpheres[trackSelector%(skySpheres.length-1)].filename);
+                        break;
+                    default:
+                }
+            }
+            break;
         // Left Play Button
         case 59:
             if(force==127){
@@ -935,19 +976,19 @@ function onMIDIMessage( event ) {
                 if(force==127){
                     switch (whichQuad()) {
                         case 0:
-                            sendTrackStatus(1,'stop','l');
+                            sendTrackStatus(1,'cue','l');
                             stopTrack(1);
                             break;
                         case 1:
-                            sendTrackStatus(2,'stop','l');
+                            sendTrackStatus(2,'cue','l');
                             stopTrack(2);
                             break;
                         case 2:
-                            sendTrackStatus(4,'stop','l');
+                            sendTrackStatus(4,'cue','l');
                             stopTrack(4);
                             break;
                         case 3:
-                            sendTrackStatus(3,'stop','l');
+                            sendTrackStatus(3,'cue','l');
                             stopTrack(3);
                             break;
                         default:
@@ -960,19 +1001,19 @@ function onMIDIMessage( event ) {
                     if(force==127){
                         switch (whichQuad()) {
                             case 0:
-                                sendTrackStatus(0,'stop','r');
+                                sendTrackStatus(0,'cue','r');
                                 stopTrack(0);
                                 break;
                             case 1:
-                                sendTrackStatus(1,'stop','r');
+                                sendTrackStatus(1,'cue','r');
                                 stopTrack(1);
                                 break;
                             case 2:
-                                sendTrackStatus(5,'stop','r');
+                                sendTrackStatus(5,'cue','r');
                                 stopTrack(5);
                                 break;
                             case 3:
-                                sendTrackStatus(4,'stop','r');
+                                sendTrackStatus(4,'cue','r');
                                 stopTrack(4);
                                 break;
                             default:
