@@ -296,7 +296,7 @@ socket.on('t', function(data){
            buttons = djControls.leftButtons;
            songInfo.setLeftSong(data.filename);
        }
-       else {
+       else if (data.side == 'r') {
            buttons = djControls.rightButtons;
            songInfo.setRightSong(data.filename);
        }
