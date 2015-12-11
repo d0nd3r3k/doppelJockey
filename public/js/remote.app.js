@@ -255,12 +255,12 @@ socket.on('connect', function(){
 
 socket.on('v', function(data){
         console.log("move vertical: %d", data)
-        guidat.ySlider = data * 2;
+        djControls.setSliderValue(djControls.ySlider, data*2);
 });
 
 socket.on('h', function(data){
         console.log("move horizontal: %d", data)
-        guidat.xSlider = data * 2;
+        djControls.setSliderValue(djControls.ySlider, data*2);
 });
 
 socket.on('t', function(data){
@@ -494,6 +494,7 @@ function animate() {
 function update(dt) {
     if(stats) stats.update();
     resize();
+
     camera.updateProjectionMatrix();
     TWEEN.update();
     if(controls)
@@ -598,10 +599,10 @@ function unpauseTrack(id){
     //  });
      gui.add(datObj, 'xSlider', 0, 255).onChange(function(v) {
          djControls.setSliderValue(djControls.xSlider, v);
-     }).listen();
+     });
      gui.add(datObj, 'ySlider', 0, 255).onChange(function(v) {
          djControls.setSliderValue(djControls.ySlider, v);
-     }).listen();
+     });
  }
 
  function resize() {
