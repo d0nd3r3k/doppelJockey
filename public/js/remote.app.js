@@ -169,7 +169,7 @@ var djControls = (function() {
                                    player.position.z = this.v;
                                }).start();
            }
-           else if ((midiVal <= 127) && (slider.prevMidi >= 127)) {     // shift spheres right
+           else if ((midiVal < 127) && (slider.prevMidi > 127)) {     // shift spheres right
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
