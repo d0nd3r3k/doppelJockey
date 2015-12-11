@@ -20,6 +20,8 @@ mapCube,
 mapTexture,
 cubeMaterial,
 djbox,
+songPlane,
+songMaterial,
 button, //just to test
 testSphere, //just to test
 clock,
@@ -217,50 +219,6 @@ var djControls = (function() {
        knob.position.set(x, -4.6, y);
        return knob;
    }
-   // function setControllerSpheres(horiz) {
-   //     console.log("swap spheres");
-   //     spheres[djc.rightSphereID].material = materials.trackSphereMaterial;
-   //     spheres[djc.leftSphereID].material = materials.trackSphereMaterial;
-   //     var r = djc.rightSphereID;
-   //     if (r == 1) {
-   //         if (horiz) {
-   //             djc.rightSphereID = 2;
-   //             djc.leftSphereID = 1;
-   //         } else {
-   //             djc.rightSphereID = 4;
-   //             djc.leftSphereID = 5;
-   //         }
-   //     }
-   //     else if (r == 2) {
-   //         if (horiz) {
-   //             djc.rightSphereID = 1;
-   //             djc.leftSphereID = 0;
-   //         } else {
-   //             djc.rightSphereID = 3;
-   //             djc.leftSphereID = 4;
-   //         }
-   //     }
-   //     else if (r == 3) {
-   //         if (horiz) {
-   //             djc.rightSphereID = 4;
-   //             djc.leftSphereID = 5;
-   //         } else {
-   //             djc.rightSphereID = 2;
-   //             djc.leftSphereID = 1;
-   //         }
-   //     }
-   //     else if (r == 4) {
-   //         if (horiz) {
-   //             djc.rightSphereID = 3;
-   //             djc.leftSphereID = 4;
-   //         } else {
-   //             djc.rightSphereID = 1;
-   //             djc.leftSphereID = 0;
-   //         }
-   //     }
-   //     spheres[djc.rightSphereID].material = materials.rightSphereMaterial;
-   //     spheres[djc.leftSphereID].material = materials.leftSphereMaterial;
-   // }
    return djc;
 })();
 
@@ -405,9 +363,35 @@ function init() {
    cubeMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, map: mapTexture });
 
    mapCube = new THREE.Mesh(new THREE.BoxGeometry(12, 12, 12), cubeMaterial);
-   mapCube.scale.set(1, 0.5, 0.01);
-   mapCube.position.set(0, 10, -15);
+   mapCube.scale.set(10, 0.5, 0.01);
+   mapCube.position.set(0, 10, -100);
    //player.add(mapCube);
+
+   // Canvas for writing song names
+   var songCanvas = document.createElement('canvas');
+   songCanvas.width = 512;
+   songCanvas.height = 512;
+   songCanvas.style.position = 'absolute';
+   songCanvas.style.bottom = '10px';
+   songCanvas.style.left = '0%';
+   songCanvas.style.visibility = 'hidden';
+   container.appendChild(songCanvas);
+
+   var songContext = songCanvas.getContext('2d');
+   songContext.font = "12px Monospace";
+   songContext.fillStyle = "rgba(255,255,255,0.95)";
+   songContext.fillText('Browsing:', 120, 50);
+   songContext.fillText('House of the Rising Sun', 120, 69);
+   songContext.fillText('L: DD Requin', 55, 499);
+   songContext.fillText('R: XX Requin', 305, 499);
+
+   var songTexture = new THREE.Texture(songCanvas);
+   mapTexture.minFilter = THREE.LinearFilter;
+   songMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, map: songTexture });
+   songPlane = new THREE.Mesh(new THREE.BoxGeometry(55, 55, 12), songMaterial);
+   //mapCube.scale.set(200, 0.5, 0.01);
+   songPlane.position.set(0, -7, -50);
+   player.add(songPlane);
 
    // DJ Controller Box
    var djtexture = THREE.ImageUtils.loadTexture('textures/controller.png');
@@ -418,11 +402,7 @@ function init() {
    djbox.rotation.x = -Math.PI/2;
    djbox.position.set(0, -5, -22);
    player.add(djbox);
-
-   //var djControls = new THREE.Mesh();
    player.add(djControls.mesh);
-   //  button = createButton(.3, .9, 0, -16.5);
-   //  djControls.add(button);
 
    addGUI(guidat);
 
@@ -437,20 +417,6 @@ function init() {
    spawnSphere(2.8,-36,5,-18.3,true, spheresGrid);
    spawnSphere(2.8,-36,5,-6.1,true, spheresGrid);
    spawnSphere(2.8,-36,5,6.1,true, spheresGrid);
-
-   // by default, 0 and 1 are in the DJ controller
-   // spheres[1].material = materials.leftSphereMaterial;
-   // spheres[2].material = materials.rightSphereMaterial;
-   // spheres[0].material = materials.trackSphereMaterial;
-   // spheres[3].material = materials.trackSphereMaterial;
-   // spheres[4].material = materials.trackSphereMaterial;
-   // spheres[5].material = materials.trackSphereMaterial;
-
-   //    testSphere = spawnSphere(2.8,-20,5,6.1,true, spheresGrid);
-   // spawnSphere(12,-20,12,254,true);
-   // spawnSphere(12,254,12,254,true);
-   // spawnSphere(12,254,12,127,true);
-   // spawnSphere(12,254,12,0,true);
 
    clock = new THREE.Clock();
 
@@ -507,7 +473,7 @@ function initWorldMap(){
 
    var floor = new THREE.Mesh(geometry, floorMaterial);
    floor.rotation.x = -Math.PI / 2;
-   scene.add(floor);
+   //scene.add(floor);
 
    for(var i=0; i<2048; i++)
        spawnCube(getRandomInt(1,10),getRandomInt(-1000,1000),getRandomInt(120,600),getRandomInt(-1000,1000));
@@ -523,7 +489,7 @@ function animate() {
    var time = Date.now();
 
    //animateBlock(time);
-   cubeMaterial.map.needsUpdate = true;
+   songMaterial.map.needsUpdate = true;
    requestAnimationFrame(animate);
    //track.panner.setPosition(player.position.x, player.position.y, player.position.z);
 
