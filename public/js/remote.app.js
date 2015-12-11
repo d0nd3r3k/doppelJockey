@@ -42,7 +42,7 @@ var materials = (function(){
     m.cubeMaterial = new THREE.MeshLambertMaterial();
     m.leftSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true, transparent: true, opacity: .9 } );
     m.rightSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe:true, transparent: true, opacity: 0.1 } );
-    m.trackSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.2 } );
+    m.trackSphereMaterial = new THREE.MeshBasicMaterial( { color: 0xfefefe, wireframe:true,transparent: true, opacity: 0.1 } );
     return m;
 })();
 
@@ -99,7 +99,7 @@ var djControls = (function() {
         sliderVal = midiToSlider(midiVal, slider.range);
         if (slider.horizontal) {
             slider.mesh.position.x = sliderVal;
-            rSphereOpacity = (midiVal%127)/127;
+            rSphereOpacity = (midiVal%128)/127;
             materials.rightSphereMaterial.opacity = Math.max(rSphereOpacity, 0.1);
             materials.leftSphereMaterial.opacity = Math.max(1-rSphereOpacity, 0.1);
 
@@ -386,6 +386,10 @@ function init() {
     // by default, 0 and 1 are in the DJ controller
     spheres[0].material = materials.leftSphereMaterial;
     spheres[1].material = materials.rightSphereMaterial;
+    spheres[2].material = materials.trackSphereMaterial;
+    spheres[3].material = materials.trackSphereMaterial;
+    spheres[4].material = materials.trackSphereMaterial;
+    spheres[5].material = materials.trackSphereMaterial;
 
     //    testSphere = spawnSphere(2.8,-20,5,6.1,true, spheresGrid);
     // spawnSphere(12,-20,12,254,true);
