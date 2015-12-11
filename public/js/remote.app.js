@@ -598,10 +598,10 @@ function unpauseTrack(id){
     //  });
      gui.add(datObj, 'xSlider', 0, 255).onChange(function(v) {
          djControls.setSliderValue(djControls.xSlider, v);
-     });
+     }).listen();
      gui.add(datObj, 'ySlider', 0, 255).onChange(function(v) {
          djControls.setSliderValue(djControls.ySlider, v);
-     });
+     }).listen();
  }
 
  function resize() {
