@@ -146,7 +146,7 @@ var djControls = (function() {
    // Slider tricks!
    djc.setSliderValue = function(slider, midiVal) {
        sliderVal = midiToSlider(midiVal, slider.range);
-       if (slider.horizontal) {
+       if (slider.horizontal) { // horizontal movement
            slider.mesh.position.x = sliderVal;
            rSphereOpacity = (midiVal%128)/127;
            materials.rightSphereMaterial.opacity = Math.max(rSphereOpacity, 0.1);
@@ -161,6 +161,8 @@ var djControls = (function() {
                                     djc.rightButtons.cue.material = djc.leftButtons.cue.material;
                                     djc.leftButtons.play.material = materials.transparentWhite;
                                     djc.leftButtons.cue.material = materials.transparentWhite;
+                                    songInfo.setRightSong(songInfo.leftSong);
+                                    songInfo.clearLeftSong();
                                     //setControllerSpheres(true);
                                 })
                                .onUpdate(function() {
@@ -176,6 +178,8 @@ var djControls = (function() {
                                     djc.rightButtons.cue.material = materials.transparentWhite;
                                     djc.leftButtons.play.material = djc.rightButtons.play.material;
                                     djc.leftButtons.cue.material = djc.rightButtons.cue.material;
+                                    songInfo.setLeftSong(songInfo.rightSong);
+                                    songInfo.clearRightSong();
                                     //setControllerSpheres(true);
                                 })
                                .onUpdate(function() {
@@ -184,7 +188,7 @@ var djControls = (function() {
                player.position.z = 0;
            }
        }
-       else {
+       else { // vertical movement
            slider.mesh.position.z = -sliderVal;
            if ((midiVal >= 127) && (slider.prevMidi <= 127)) {
                var tween = new TWEEN.Tween({v: player.position.x})
@@ -195,7 +199,7 @@ var djControls = (function() {
                                    djc.rightButtons.play.material = materials.transparentWhite;
                                    djc.leftButtons.cue.material = materials.transparentWhite;
                                    djc.rightButtons.cue.material = materials.transparentWhite;
-                                   songInfo.setLeftSong(songInfo.rightSong);
+                                   songInfo.clearLeftSong();
                                    songInfo.clearRightSong();
                                 })
                                .onUpdate(function() {
@@ -212,7 +216,7 @@ var djControls = (function() {
                                     djc.rightButtons.play.material = materials.transparentWhite;
                                     djc.leftButtons.cue.material = materials.transparentWhite;
                                     djc.rightButtons.cue.material = materials.transparentWhite;
-                                    songInfo.setRightSong(songInfo.leftSong);
+                                    songInfo.clearRightSong();
                                     songInfo.clearLeftSong();
                                 })
                                .onUpdate(function() {
