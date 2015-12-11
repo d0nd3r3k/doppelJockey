@@ -113,24 +113,32 @@ var djControls = (function() {
            materials.rightSphereMaterial.opacity = Math.max(rSphereOpacity, 0.1);
            materials.leftSphereMaterial.opacity = Math.max(1-rSphereOpacity, 0.1);
 
-           if ((midiVal >= 127) && (slider.prevMidi <= 127)) {
+           if ((midiVal >= 127) && (slider.prevMidi <= 127)) {         // shift spheres left
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: -12.2}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
-                            //    .onStart(function() {
-                            //        setControllerSpheres(true);
-                            //    })
+                                .onStart(function() {
+                                    djc.rightButtons.play.material = djc.leftButtons.play.material;
+                                    djc.rightButtons.cue.material = djc.leftButtons.cue.material;
+                                    djc.leftButtons.play.material = materials.transparentWhite;
+                                    djc.leftButtons.cue.material = materials.transparentWhite;
+                                    //setControllerSpheres(true);
+                                })
                                .onUpdate(function() {
                                    player.position.z = this.v;
                                }).start();
            }
-           else if ((midiVal <= 127) && (slider.prevMidi >= 127)) {
+           else if ((midiVal <= 127) && (slider.prevMidi >= 127)) {     // shift spheres right
                var tween = new TWEEN.Tween({v: player.position.z})
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
-                            //    .onStart(function() {
-                            //        setControllerSpheres(true);
-                            //    })
+                                .onStart(function() {
+                                    djc.rightButtons.play.material = materials.transparentWhite;
+                                    djc.rightButtons.cue.material = materials.transparentWhite;
+                                    djc.leftButtons.play.material = djc.rightButtons.play.material;
+                                    djc.leftButtons.cue.material = djc.rightButtons.cue.material;
+                                    //setControllerSpheres(true);
+                                })
                                .onUpdate(function() {
                                    player.position.z = this.v;
                                }).start();
@@ -143,9 +151,13 @@ var djControls = (function() {
                var tween = new TWEEN.Tween({v: player.position.x})
                                .to({v: -16}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
-                            //    .onStart(function() {
-                            //        setControllerSpheres(false);
-                            //    })
+                               .onStart(function() {
+                                   djc.leftButtons.play.material = materials.transparentWhite;
+                                   djc.rightButtons.play.material = materials.transparentWhite;
+                                   djc.leftButtons.cue.material = materials.transparentWhite;
+                                   djc.rightButtons.cue.material = materials.transparentWhite;
+                                    //setControllerSpheres(false);
+                                })
                                .onUpdate(function() {
                                    player.position.x = this.v;
                                }).start();
@@ -155,9 +167,13 @@ var djControls = (function() {
                var tween = new TWEEN.Tween({v: player.position.x})
                                .to({v: 0}, 300)
                                .easing(TWEEN.Easing.Cubic.In)
-                            //    .onStart(function() {
-                            //        setControllerSpheres(false);
-                            //    })
+                                .onStart(function() {
+                                    djc.leftButtons.play.material = materials.transparentWhite;
+                                    djc.rightButtons.play.material = materials.transparentWhite;
+                                    djc.leftButtons.cue.material = materials.transparentWhite;
+                                    djc.rightButtons.cue.material = materials.transparentWhite;
+                                    //setControllerSpheres(false);
+                                })
                                .onUpdate(function() {
                                    player.position.x = this.v;
                                }).start();
@@ -622,8 +638,6 @@ function addGUI(datObj){
    //      testSphere.position.z = v;
    //  });
     gui.add(datObj, 'xSlider', 0, 255).onChange(function(v) {
-        var v2 = 255-v;
-        console.log("setting slider value " + v2);
         djControls.setSliderValue(djControls.xSlider, 255-v);
     });
     gui.add(datObj, 'ySlider', 0, 255).onChange(function(v) {
