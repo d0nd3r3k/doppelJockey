@@ -116,6 +116,7 @@ var blocks=[];
 var spheres=[];
 var debugSpheres=[];
 var skySpheres=[];
+var trackSelector=0;
 var sHost = window.location.origin;
 var socket = io.connect(sHost);
 var tracksList = JSON.parse(getList());
@@ -528,6 +529,10 @@ function render(dt) {
 
 function highlightSphere(index){
     skySpheres[index].material.color.setHex(0xD01111);
+    for(var i=0; i<skySpheres.length;i++){
+        if(i!=index)
+            skySpheres[i].material.color.setHex(0xffffff);
+    }
 }
 
  function animateBlock(time){
@@ -832,7 +837,12 @@ function onMIDIMessage( event ) {
             }
             break;
         case 26:
-            highlightSphere()
+            if(force == 1)
+                trackSelector++;
+            else
+                trackSelector--;
+            console.log(trackSelector%(skySpheres.length-1));    
+            highlightSphere(trackSelector%(skySpheres.length-1));
             break;
         case 52:
             if(force==127){
