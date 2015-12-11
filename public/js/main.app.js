@@ -325,8 +325,11 @@ function initWorldMap(){
         spawnCube(getRandomInt(1,10),getRandomInt(-1000,1000),getRandomInt(120,600),getRandomInt(-1000,1000));
 
 
-    for(var i=0; i<tracksList.length; i++)
+    for(var i=0; i<tracksList.length; i++){
         spawnSphere(getRandomInt(6,16),getRandomInt(-500,600),getRandomInt(500,600),getRandomInt(-500,600), false);
+        skySpheres[i].filename = tracksList[i].filename;
+    }
+
 }
 
 /*
@@ -564,7 +567,7 @@ function playTrack(id){
     tracks[id].panner.setPosition(tracks[id].x,tracks[id].y,tracks[id].z);
 
     tracks[id].source.start(0);
-    sendTrackStatus(id);
+
 }
 
 function applyFilter(id, type){
@@ -650,9 +653,11 @@ function sendHorizontalSlider(p){
     socket.emit('horizontal',p);
 }
 
-function sendTrackStatus(id){
+function sendTrackStatus(id, action, side){
     var d = {};
     var t = tracks[id];
+    d.action = action;
+    d.side = side;
     d.id = id;
     d.filename = t.filename.split("/")[1];
     d.fx = t.fx;
@@ -858,45 +863,66 @@ function onMIDIMessage( event ) {
                     case 0:
                         if(!tracks[1].isPlaying){
                             playTrack(1);
+                            sendTrackStatus(1,'play','l');
                         }
                         else{
-                            if(tracks[1].isPlaying != 100)
+                            if(tracks[1].isPlaying != 100){
                                 pauseTrack(1);
-                            else
+                                sendTrackStatus(1,'pause','l');
+                            }
+                            else{
                                 unpauseTrack(1);
+                                sendTrackStatus(1,'play','l');
+                            }
                         }
                         break;
                     case 1:
                         if(!tracks[2].isPlaying){
                             playTrack(2);
+                            sendTrackStatus(2,'play','l');
                         }
                         else{
-                            if(tracks[2].isPlaying != 100)
+                            if(tracks[2].isPlaying != 100){
                                 pauseTrack(2);
-                            else
+                                sendTrackStatus(2,'pause','l');
+                            }
+                            else{
                                 unpauseTrack(2);
+                                sendTrackStatus(2,'play','l');
+                            }
+
                         }
                         break;
                     case 2:
                         if(!tracks[4].isPlaying){
                             playTrack(4);
+                            sendTrackStatus(4,'play','l');
                         }
                         else{
-                            if(tracks[4].isPlaying != 100)
+                            if(tracks[4].isPlaying != 100){
                                 pauseTrack(4);
-                            else
+                                sendTrackStatus(4,'pause','l');
+                            }
+                            else{
                                 unpauseTrack(4);
+                                sendTrackStatus(4,'play','l');
+                            }
                         }
                         break;
                     case 3:
                         if(!tracks[3].isPlaying){
                             playTrack(3);
+                            sendTrackStatus(3,'play','l');
                         }
                         else{
-                            if(tracks[3].isPlaying != 100)
+                            if(tracks[3].isPlaying != 100){
                                 pauseTrack(3);
-                            else
+                                sendTrackStatus(3,'pause','l');
+                            }
+                            else{
                                 unpauseTrack(3);
+                                sendTrackStatus(3,'play','l');
+                            }
                         }
                         break;
                     default:
@@ -909,15 +935,19 @@ function onMIDIMessage( event ) {
                 if(force==127){
                     switch (whichQuad()) {
                         case 0:
+                            sendTrackStatus(1,'stop','l');
                             stopTrack(1);
                             break;
                         case 1:
+                            sendTrackStatus(2,'stop','l');
                             stopTrack(2);
                             break;
                         case 2:
+                            sendTrackStatus(4,'stop','l');
                             stopTrack(4);
                             break;
                         case 3:
+                            sendTrackStatus(3,'stop','l');
                             stopTrack(3);
                             break;
                         default:
@@ -930,15 +960,19 @@ function onMIDIMessage( event ) {
                     if(force==127){
                         switch (whichQuad()) {
                             case 0:
+                                sendTrackStatus(0,'stop','r');
                                 stopTrack(0);
                                 break;
                             case 1:
+                                sendTrackStatus(1,'stop','r');
                                 stopTrack(1);
                                 break;
                             case 2:
+                                sendTrackStatus(5,'stop','r');
                                 stopTrack(5);
                                 break;
                             case 3:
+                                sendTrackStatus(4,'stop','r');
                                 stopTrack(4);
                                 break;
                             default:
@@ -951,43 +985,67 @@ function onMIDIMessage( event ) {
                 if(force==127){
                     switch (whichQuad()) {
                         case 0:
-                            if(!tracks[0].isPlaying)
+                            if(!tracks[0].isPlaying){
                                 playTrack(0);
+                                sendTrackStatus(0,'play','r');
+                            }
                             else{
-                                if(tracks[0].isPlaying != 100)
+                                if(tracks[0].isPlaying != 100){
                                     pauseTrack(0);
-                                else
+                                    sendTrackStatus(0,'pause','r');
+                                }
+                                else{
                                     unpauseTrack(0);
+                                    sendTrackStatus(0,'play','r');
+                                }
                             }
                             break;
                         case 1:
-                            if(!tracks[1].isPlaying)
+                            if(!tracks[1].isPlaying){
                                 playTrack(1);
+                                sendTrackStatus(1,'play','r');
+                            }
                             else{
-                                if(tracks[1].isPlaying != 100)
+                                if(tracks[1].isPlaying != 100){
                                     pauseTrack(1);
-                                else
+                                    sendTrackStatus(1,'pause','r');
+                                }
+                                else{
                                     unpauseTrack(1);
+                                    sendTrackStatus(1,'play','r');
+                                }
                             }
                             break;
                         case 2:
-                            if(!tracks[5].isPlaying)
+                            if(!tracks[5].isPlaying){
                                 playTrack(5);
+                                sendTrackStatus(5,'play','r');
+                            }
                             else{
-                                if(tracks[5].isPlaying != 100)
+                                if(tracks[5].isPlaying != 100){
                                     pauseTrack(5);
-                                else
+                                    sendTrackStatus(5,'pause','r');
+                                }
+                                else{
                                     unpauseTrack(5);
+                                    sendTrackStatus(5,'play','r');
+                                }
                             }
                             break;
                         case 3:
-                            if(!tracks[4].isPlaying)
+                            if(!tracks[4].isPlaying){
                                 playTrack(4);
+                                sendTrackStatus(4,'play','r');
+                            }
                             else{
-                                if(tracks[4].isPlaying != 100)
+                                if(tracks[4].isPlaying != 100){
                                     pauseTrack(4);
-                                else
+                                    sendTrackStatus(4,'pause','r');
+                                }
+                                else{
                                     unpauseTrack(4);
+                                    sendTrackStatus(4,'play','r');
+                                }
                             }
                             break;
                         default:
