@@ -103,7 +103,7 @@ var djControls = (function() {
             materials.rightSphereMaterial.opacity = Math.max(rSphereOpacity, 0.1);
             materials.leftSphereMaterial.opacity = Math.max(1-rSphereOpacity, 0.1);
 
-            if ((midiVal > 127) && (slider.prevMidi < 127)) {
+            if ((midiVal < 127) && (slider.prevMidi > 127)) {
                 var tween = new TWEEN.Tween({v: player.position.z})
                                 .to({v: -12.2}, 300)
                                 .easing(TWEEN.Easing.Cubic.In)
@@ -114,7 +114,7 @@ var djControls = (function() {
                                     player.position.z = this.v;
                                 }).start();
             }
-            else if ((midiVal < 127) && (slider.prevMidi > 127)) {
+            else if ((midiVal > 127) && (slider.prevMidi < 127)) {
                 var tween = new TWEEN.Tween({v: player.position.z})
                                 .to({v: 0}, 300)
                                 .easing(TWEEN.Easing.Cubic.In)
@@ -171,7 +171,7 @@ var djControls = (function() {
         s.horizontal = width < length;    // check orientation
         s.mesh = createSliderPiece(width, length, x, y);
         s.range = [min, max];
-        s.prevMidi = s.horizontal ? 255:0;
+        s.prevMidi = 0;
         return s;
     }
     function midiToSlider(midiVal, sliderRange) {
@@ -336,7 +336,7 @@ function init() {
         this.testSphereX = -20;
         this.testSphereY = 12;
         this.testSphereZ = 0;
-        this.xSlider = 255;
+        this.xSlider = 0;
         this.ySlider = 0;
         //Add more control variables
     }
